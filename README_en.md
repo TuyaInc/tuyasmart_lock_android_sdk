@@ -22,21 +22,18 @@ Before integrating Tuya Lock SDK, you need to do the following:
 
 1. Add tuya maven address in root `build.gradle` 
 
-		```groovy
-	allprojects {
-		    repositories {
-		        // tuya maven url
-		        maven {
-		            url "https://maven-other.tuya.com/repository/maven-releases/"
-		        }
-		        google()
-		        jcenter()
-		    }
-		}
-	```
-	
-	
-	
+    ```groovy
+    allprojects {
+      repositories {
+      // tuya maven url
+      maven {
+        url "https://maven-other.tuya.com/repository/maven-releases/"
+      }
+      google()
+        jcenter()
+      }
+    }
+    ```
 2. Add the door lock SDK dependency in the dependencies of `build.gradle` in the module layer
 
     ```groovy

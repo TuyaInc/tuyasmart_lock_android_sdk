@@ -27,21 +27,19 @@
 
 1. 在根目录 `build.gradle` 中添加涂鸦 maven 地址：
 
-		```groovy
-	allprojects {
-		    repositories {
-		        // tuya maven url
-		        maven {
-		            url "https://maven-other.tuya.com/repository/maven-releases/"
-		        }
-		        google()
-		        jcenter()
-		    }
-		}
-	```
-	
-	
-	
+    ```groovy
+    allprojects {
+      repositories {
+      // tuya maven url
+      maven {
+        url "https://maven-other.tuya.com/repository/maven-releases/"
+      }
+      google()
+        jcenter()
+      }
+    }
+    ```
+
 2. 在 module 层的 `build.gradle `的 `dependencies` 中添加门锁 SDK 依赖
 
     ```groovy

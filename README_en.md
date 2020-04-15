@@ -2,6 +2,10 @@
 
 # Tuya Smart Lock Android SDK
 
+** The SDK is currently in the developer preview stage and is still being continuously improved. If you have any questions or suggestions, please contact us. **
+
+[TOC]
+
 Tuya smart lock Android The SDK provides function packaging with smart door lock devices to speed up and simplify the development process of door lock application functions, including the following functions:
 
 * Door lock user system (including lock user management, associated password, etc.)
@@ -39,7 +43,7 @@ Before integrating Tuya Lock SDK, you need to do the following:
     ```groovy
     dependencies {
         ...
-       implementation 'com.tuya.smart:tuyasmart-lock-sdk:1.0.0'
+       implementation 'com.tuya.smart:tuyasmart-lock-sdk:1.0.1-beta1-SNAPSHOT'
     }
     ```
 
@@ -51,12 +55,12 @@ Before integrating Tuya Lock SDK, you need to do the following:
 |hijack|Door lock hijacking refers to setting a specific password (fingerprint, password, etc.) as the hijacking password. <br/> When the user enters this password to open the door, the door lock considers the user to open the door involuntarily, and sends the alarm information to the family's mobile phone or property management system.|
 |door lock member|Door lock members are divided into family members and non-family members. <br/> Family members are members who are added to the user's family. The door lock can be used to manage family members and set the unlock mode. <br/> Non-family members are members created in door locks and can be managed through door lock related interfaces.|
 
-## APIs
+## Tuya WiFi Lock APIs
 
-The following door lock methods are encapsulated in the TuyaLockDevice class, which is used after creating a TuyaLockDevice object by passing in the device id:
+The following door lock methods are encapsulated in the TuyaWifiLockDevice class, which is used after creating a TuyaWifiLockDevice object by passing in the device id:
 
 ```java
-TuyaLockDevice tuyaLockDevice = new TuyaLockDevice(deviceId);
+TuyaWifiLockDevice tuyaLockDevice = new TuyaWifiLockDevice(deviceId);
 ```
 
 ### Door Lock Member Management
@@ -98,8 +102,8 @@ tuyaLockDevice.getUsers(new ITuyaResultCallback<List<LockUser>>() {
     }
 
     @Override
-    public void onSuccess(List<LockUser> lockUserBean) {
-        Log.i(TAG, "get lock users success: lockUserBean = " + lockUserBean);
+    public void onSuccess(List<LockUser> wifiLockUserBean) {
+        Log.i(TAG, "get lock users success: wifiLockUserBean = " + wifiLockUserBean);
     }
 });
 ```
@@ -614,7 +618,7 @@ private void replyRemoteUnlockRequest(boolean allow) {
     });
 }
 ```
-## Wi-Fi Door Lock Function Points
+### Wi-Fi Door Lock Function Points
 
 Dp means data point, it can also be called a function point.
 
@@ -654,3 +658,131 @@ Dp means data point, it can also be called a function point.
 | offline password unlock report | unlock\_offline\_pd            |
 | offline password clear report | unlock\_offline\_clear         |
 | single offline password clear report | unlock\_offline\_clear\_single |
+
+## Bluetooth door lock APIs
+
+Before accessing the Bluetooth door lock, please configure the device.
+
+The following describes the functional interface of the Bluetooth door lock
+
+
+```java
+TuyaBleLockDevice tuyaLockDevice = new TuyaBleLockDevice(deviceId);
+```
+
+### the door lock isOnline
+
+```java
+/**
+ *
+ *  @return if lock online, return true
+ */
+public boolean isOnline() 
+```
+
+example
+
+    boolean online = tuyaLockDevice.isOnline();
+### connect the door
+
+```java
+tuyaLockDevice.connect(new ConnectListener() {
+    @Override
+    public void onStatusChanged(boolean online) {
+        Log.i(TAG, "onStatusChanged  online: " + online);
+    }
+});
+```
+
+### set lock open or close status callback
+
+    /**
+     * callback lock open or close status
+     * @param lockStatusListener lock open or close status callback
+     */
+    public void setLockStatusListener(LockStatusListener lockStatusListener)
+    
+### unlock the door
+
+    /**
+     * unlock the door
+     */
+    public void unlock(String lockUserId)
+
+### lock the door
+
+    /**
+     * lock the door
+     */
+    public void lock()
+    
+### get home users
+
+    /**
+     * get home users
+     */
+    public void getHomeUsers(final ITuyaResultCallback<List<User>> callback)
+    
+### get lock users
+
+    /**
+     * get lock users
+     */
+    public void getLockUsers(final ITuyaResultCallback<List<User>> callback) 
+    
+### get user info by userId
+    /**
+     * get user info by userId
+     * @param userId userId
+     * @param callback callback
+     */
+    public void getUser(String userId, final ITuyaResultCallback<User> callback)
+    
+### get current user info
+
+    /**
+     * get current user info
+     * @param userId userId
+     * @param callback callback
+     */
+    public void getCurrentUser(String userId, final ITuyaResultCallback<User> callback)
+    
+### add lock user
+
+    /**
+     * add lock user
+     * @param userName userName
+     * @param unlockType unlockType {@link com.tuya.smart.optimus.lock.api.TuyaUnlockType}
+     * @param permanent Whether the user is permanent
+     * @param startTimestamp User effective time
+     * @param endTimestamp User expiration time
+     * @param avatarFile avatar
+     * @param callback  callback
+     */
+    public void addUser(final String userName, final String unlockType, final boolean permanent, long startTimestamp, long endTimestamp, File avatarFile, final ITuyaResultCallback<Boolean> callback)
+
+### update lock user
+
+    /**
+     * update lock user
+     * @param userId userId
+     * @param userName userName
+     * @param unlockType unlockType {@link com.tuya.smart.optimus.lock.api.TuyaUnlockType}
+     * @param permanent Whether the user is permanent
+     * @param startTimestamp User effective time
+     * @param endTimestamp User expiration time
+     * @param avatarFile avatar
+     * @param callback  callback
+     */
+    public void updateUser(final String userId, final String userName, final String unlockType, final boolean permanent, long startTimestamp, long endTimestamp, File avatarFile, final ITuyaResultCallback<Boolean> callback)
+    
+
+### delete lock user
+	    
+	/**
+	 * delete lock user
+	 * @param userId userId
+	 * @param callback  callback
+	 */
+	public void deleteUser(String userId, final ITuyaResultCallback<Boolean> callback)
+	 

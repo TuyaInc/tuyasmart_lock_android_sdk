@@ -4,13 +4,17 @@
 
 [English Document](README_en.md)
 
+[TOC]
 
+**当前 SDK 处于开发者预览阶段，仍在持续改善中，如有任何使用上的问题或建议，请联系我们。**
 
 涂鸦智能门锁 Android SDK 提供了与智能门锁设备的功能封装，加速和简化门锁应用功能开发过程，主要包括了以下功能：
 
 * 门锁用户体系 （包括门锁用户管理、关联密码等功能）
 * 门锁密码解锁（包括动态密码获取、临时密码管理相关的功能）
 * 门锁使用记录（包括门锁开锁记录、门铃记录、报警记录等功能）
+
+本SDK支持蓝牙门锁和WIFI门锁两类产品。
 
 ## 集成前提
 
@@ -45,7 +49,7 @@
     ```groovy
     dependencies {
         ...
-       implementation 'com.tuya.smart:tuyasmart-lock-sdk:1.0.0'
+       implementation 'com.tuya.smart:tuyasmart-lock-sdk:1.0.1-beta1-SNAPSHOT'
     }
     ```
 
@@ -57,7 +61,7 @@
 |劫持|门锁劫持是指将录入特定的密码（指纹、密码等），设置为劫持密码。<br>当用户输入此密码开门时，门锁认为用户非自愿开门，会将告警信息发送至家人手机或物业管理系统。|
 |门锁成员|门锁成员分为家庭成员与非家庭成员。<br>家庭成员即添加到用户家庭中的成员，门锁内可对管理家庭成员，设置开锁方式。<br>非家庭成员为在门锁内创建的成员，可通过门锁相关接口进行管理。|
 
-## API 列表
+## WIFI门锁功能接入
 
 下方的门锁方法均封装在 TuyaLockDevice 类中, 通过传入设备 id 创建 TuyaLockDevice 对象后使用：
 
@@ -102,8 +106,8 @@ tuyaLockDevice.getUsers(new ITuyaResultCallback<List<LockUser>>() {
     }
 
     @Override
-    public void onSuccess(List<LockUser> lockUserBean) {
-        Log.i(TAG, "get lock users success: lockUserBean = " + lockUserBean);
+    public void onSuccess(List<LockUser> wifiLockUserBean) {
+        Log.i(TAG, "get lock users success: wifiLockUserBean = " + wifiLockUserBean);
     }
 });
 ```
@@ -644,7 +648,7 @@ private void replyRemoteUnlockRequest(boolean allow) {
 }
 ```
 
-## Wi-Fi 门锁功能点列表
+### Wi-Fi 门锁功能点列表
 
 | dp name              | dp code                        |
 | -------------------- | ------------------------------ |
@@ -682,3 +686,130 @@ private void replyRemoteUnlockRequest(boolean allow) {
 | 离线密码解锁上报     | unlock\_offline\_pd            |
 | 离线密码清空上报     | unlock\_offline\_clear         |
 | 单条离线密码清空上报 | unlock\_offline\_clear\_single |
+
+## 蓝牙门锁功能接入
+
+接入蓝牙门锁前，请先对设备进行配网操作。
+
+下面开始说明蓝牙门锁的功能接口
+
+```java
+TuyaBleLockDevice tuyaLockDevice = new TuyaBleLockDevice(deviceId);
+```
+
+### 判断门锁是否在线
+
+```java
+/**
+ *
+ *  @return if lock online, return true
+ */
+public boolean isOnline() 
+```
+
+示例代码
+
+    boolean online = tuyaLockDevice.isOnline();
+### 连接蓝牙门锁
+
+```java
+tuyaLockDevice.connect(new ConnectListener() {
+    @Override
+    public void onStatusChanged(boolean online) {
+        Log.i(TAG, "onStatusChanged  online: " + online);
+    }
+});
+```
+
+### 设置开门状态监听
+
+    /**
+     * callback lock open or close status
+     * @param lockStatusListener lock open or close status callback
+     */
+    public void setLockStatusListener(LockStatusListener lockStatusListener)
+    
+### 通过蓝牙关闭门锁
+
+    /**
+     * unlock the door
+     */
+    public void unlock(String lockUserId)
+
+### 通过蓝牙打开门锁
+
+    /**
+     * lock the door
+     */
+    public void lock()
+    
+### 获取家庭用户
+
+    /**
+     * get home users
+     */
+    public void getHomeUsers(final ITuyaResultCallback<List<User>> callback)
+    
+### 获取门锁用户
+
+    /**
+     * get lock users
+     */
+    public void getLockUsers(final ITuyaResultCallback<List<User>> callback) 
+    
+### 根据用户id获取用户
+    /**
+     * get user info by userId
+     * @param userId userId
+     * @param callback callback
+     */
+    public void getUser(String userId, final ITuyaResultCallback<User> callback)
+    
+### 获取当前登录的用户的用户信息
+
+    /**
+     * get current user info
+     * @param userId userId
+     * @param callback callback
+     */
+    public void getCurrentUser(String userId, final ITuyaResultCallback<User> callback)
+    
+### 新增门锁用户
+
+    /**
+     * add lock user
+     * @param userName userName
+     * @param unlockType unlockType {@link com.tuya.smart.optimus.lock.api.TuyaUnlockType}
+     * @param permanent Whether the user is permanent
+     * @param startTimestamp User effective time
+     * @param endTimestamp User expiration time
+     * @param avatarFile avatar
+     * @param callback  callback
+     */
+    public void addUser(final String userName, final String unlockType, final boolean permanent, long startTimestamp, long endTimestamp, File avatarFile, final ITuyaResultCallback<Boolean> callback)
+
+### 更新用户
+
+    /**
+     * add lock user
+     * @param userId userId
+     * @param userName userName
+     * @param unlockType unlockType {@link com.tuya.smart.optimus.lock.api.TuyaUnlockType}
+     * @param permanent Whether the user is permanent
+     * @param startTimestamp User effective time
+     * @param endTimestamp User expiration time
+     * @param avatarFile avatar
+     * @param callback  callback
+     */
+    public void updateUser(final String userId, final String userName, final String unlockType, final boolean permanent, long startTimestamp, long endTimestamp, File avatarFile, final ITuyaResultCallback<Boolean> callback)
+    
+
+### 删除用户
+	    
+	/**
+	 * delete lock user
+	 * @param userId userId
+	 * @param callback  callback
+	 */
+	public void deleteUser(String userId, final ITuyaResultCallback<Boolean> callback)
+	 

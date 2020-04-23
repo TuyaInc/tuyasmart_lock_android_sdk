@@ -49,7 +49,7 @@
     ```groovy
     dependencies {
         ...
-       implementation 'com.tuya.smart:tuyasmart-lock-sdk:1.0.1-beta1-SNAPSHOT'
+       implementation 'com.tuya.smart:tuyasmart-lock-sdk:1.0.1'
     }
     ```
 
@@ -63,10 +63,15 @@
 
 ## WIFI门锁功能接入
 
-下方的门锁方法均封装在 TuyaLockDevice 类中, 通过传入设备 id 创建 TuyaLockDevice 对象后使用：
+下方的门锁方法均封装在 ITuyaWifiLock 接口中, 通过传入设备 id 获取 ITuyaWifiLock 对象后使用：
 
 ```java
-TuyaLockDevice tuyaLockDevice = new TuyaLockDevice(deviceId);
+	// 初始化SDK，仅需要调用一次
+    TuyaOptimusSdk.init(getApplicationContext());
+    // 获取ITuyaLockManager
+    ITuyaLockManager tuyaLockManager = TuyaOptimusSdk.getManager(ITuyaLockManager.class);
+    // 创建 ITuyaWifiLock
+    ITuyaWifiLock tuyaLockDevice = tuyaLockManager.getWifiLock("656564654c11ae0f917f");
 ```
 
 ### 门锁成员
@@ -77,12 +82,12 @@ TuyaLockDevice tuyaLockDevice = new TuyaLockDevice(deviceId);
 **接口说明**
 
 ```java
-public void getUsers(final ITuyaResultCallback<List<LockUserBean>> callback)
+public void getUsers(final ITuyaResultCallback<List<WifiLockUser>> callback)
 ```
 
 **参数说明**
 
-**`LockUserBean` 字段说明**
+**`WifiLockUser` 字段说明**
 
 |字段|类型|描述|
 |---|---|---|
@@ -99,15 +104,15 @@ public void getUsers(final ITuyaResultCallback<List<LockUserBean>> callback)
 **示例代码**
 
 ```java
-tuyaLockDevice.getUsers(new ITuyaResultCallback<List<LockUser>>() {
+tuyaLockDevice.getUsers(new ITuyaResultCallback<List<WifiLockUser>>() {
     @Override
     public void onError(String code, String message) {
         Log.e(TAG, "get lock users failed: code = " + code + "  message = " + message);
     }
 
     @Override
-    public void onSuccess(List<LockUser> wifiLockUserBean) {
-        Log.i(TAG, "get lock users success: wifiLockUserBean = " + wifiLockUserBean);
+    public void onSuccess(List<WifiLockUser> wifiLockUser) {
+        Log.i(TAG, "get lock users success: wifiLockUser = " + wifiLockUser);
     }
 });
 ```
@@ -691,26 +696,48 @@ private void replyRemoteUnlockRequest(boolean allow) {
 
 接入蓝牙门锁前，请先对设备进行配网操作。
 
-下面开始说明蓝牙门锁的功能接口
+蓝牙门锁的方法均封装在 ITuyaBleLock 接口中, 通过传入设备 id 获取 ITuyaBleLock 对象后使用：
 
 ```java
-TuyaBleLockDevice tuyaLockDevice = new TuyaBleLockDevice(deviceId);
+	// 初始化SDK，仅需要调用一次
+    TuyaOptimusSdk.init(getApplicationContext());
+    // 获取ITuyaLockManager
+    ITuyaLockManager tuyaLockManager = TuyaOptimusSdk.getManager(ITuyaLockManager.class);
+    // 创建 ITuyaBleLock
+    ITuyaBleLock tuyaLockDevice = tuyaLockManager.getBleLock(your_device_id);
 ```
 
 ### 判断门锁是否在线
 
+**接口说明**
+
 ```java
 /**
- *
  *  @return if lock online, return true
  */
 public boolean isOnline() 
 ```
 
-示例代码
+**示例代码**
 
-    boolean online = tuyaLockDevice.isOnline();
+```java
+boolean online = tuyaLockDevice.isOnline();
+```
+
 ### 连接蓝牙门锁
+
+**接口说明**
+
+```java
+/**
+ * connect to lock
+ *
+ * @param connectListener callback BLE lock connect status
+ */
+public void connect(ConnectListener connectListener)
+```
+
+**示例代码**
 
 ```java
 tuyaLockDevice.connect(new ConnectListener() {
@@ -721,60 +748,61 @@ tuyaLockDevice.connect(new ConnectListener() {
 });
 ```
 
-### 设置开门状态监听
-
-    /**
-     * callback lock open or close status
-     * @param lockStatusListener lock open or close status callback
-     */
-    public void setLockStatusListener(LockStatusListener lockStatusListener)
-    
 ### 通过蓝牙关闭门锁
+
+**接口说明**
 
     /**
      * unlock the door
      */
-    public void unlock(String lockUserId)
+    public void unlock(String WifiLockUserId)
 
 ### 通过蓝牙打开门锁
+**接口说明**
 
     /**
      * lock the door
      */
     public void lock()
-    
+
 ### 获取家庭用户
+**接口说明**
 
     /**
      * get home users
      */
-    public void getHomeUsers(final ITuyaResultCallback<List<User>> callback)
-    
+	public void getHomeUsers(final ITuyaResultCallback<List<BLELockUser>> callback)
+
 ### 获取门锁用户
+**接口说明**
 
     /**
      * get lock users
      */
-    public void getLockUsers(final ITuyaResultCallback<List<User>> callback) 
-    
+    public void getLockUsers(final ITuyaResultCallback<List<BLELockUser>> callback)
+
 ### 根据用户id获取用户
+**接口说明**
+
     /**
      * get user info by userId
      * @param userId userId
      * @param callback callback
      */
-    public void getUser(String userId, final ITuyaResultCallback<User> callback)
-    
+    public void getUser(String userId, final ITuyaResultCallback<BLELockUser> callback)
+
 ### 获取当前登录的用户的用户信息
+**接口说明**
 
     /**
      * get current user info
      * @param userId userId
      * @param callback callback
      */
-    public void getCurrentUser(String userId, final ITuyaResultCallback<User> callback)
-    
+    public void getCurrentUser(String userId, final ITuyaResultCallback<BLELockUser> callback)
+
 ### 新增门锁用户
+**接口说明**
 
     /**
      * add lock user
@@ -789,6 +817,7 @@ tuyaLockDevice.connect(new ConnectListener() {
     public void addUser(final String userName, final String unlockType, final boolean permanent, long startTimestamp, long endTimestamp, File avatarFile, final ITuyaResultCallback<Boolean> callback)
 
 ### 更新用户
+**接口说明**
 
     /**
      * add lock user
@@ -802,14 +831,90 @@ tuyaLockDevice.connect(new ConnectListener() {
      * @param callback  callback
      */
     public void updateUser(final String userId, final String userName, final String unlockType, final boolean permanent, long startTimestamp, long endTimestamp, File avatarFile, final ITuyaResultCallback<Boolean> callback)
-    
+
 
 ### 删除用户
-	    
+**接口说明**
+
 	/**
 	 * delete lock user
-	 * @param userId userId
+	 * @param user user bean
 	 * @param callback  callback
 	 */
-	public void deleteUser(String userId, final ITuyaResultCallback<Boolean> callback)
-	 
+	public void deleteUser(BLELockUser user, final ITuyaResultCallback<Boolean> callback)
+### 获取解锁记录
+
+**示例代码**
+
+    ArrayList<String> dpCodes = new ArrayList<>();
+    dpCodes.add(TuyaUnlockType.BLE);
+    tuyaLockDevice.getUnlockRecords(dpCodes, 0, 10, new ITuyaResultCallback<Record>() {
+        @Override
+        public void onError(String code, String message) {
+            Log.e(TAG, "get unlock records failed: code = " + code + "  message = " + message);
+        }
+
+        @Override
+        public void onSuccess(Record recordBean) {
+            Log.i(TAG, "get unlock records success: recordBean = " + recordBean);
+        }
+    });
+### 获取告警记录
+
+**示例代码**
+
+    ArrayList<String> dpCodes = new ArrayList<>();
+    dpCodes.add("alarm_lock");
+    dpCodes.add("hijack");
+    dpCodes.add("doorbell");
+    tuyaLockDevice.getRecords(dpCodes, 0, 10, new ITuyaResultCallback<Record>() {
+        @Override
+        public void onError(String code, String message) {
+            Log.e(TAG, "get lock records failed: code = " + code + "  message = " + message);
+        }
+
+        @Override
+        public void onSuccess(Record recordBean) {
+            Log.i(TAG, "get lock records success: recordBean = " + recordBean);
+        }
+    });
+### 获取密码记录
+
+	void getUnlockModeList(String unlockType, final ITuyaResultCallback<ArrayList<UnlockMode>> callback);
+
+### 设置开门方式添加删除监听
+
+	void setUnlockModeListener(UnlockModeListener unlockModeListener);
+
+### 添加用户密码
+
+	void addPasswordUnlockMode(final BLELockUser user, String name, String password, boolean isHijack);
+
+### 更新密码
+
+	void updatePasswordUnlockMode(UnlockMode unlockMode, String name, String password, boolean isHijack);
+
+### 添加指纹
+
+	void addFingerprintUnlockMode(final BLELockUser user, String name, boolean isHijack);
+
+### 删除密码
+
+	void deletePasswordUnlockMode(UnlockMode unlockMode);
+
+### 更新指纹
+
+该接口仅更新指纹密码的名称和是否为劫持密码
+
+	void updateFingerprintName(UnlockMode unlockMode, String name, boolean isHijack);
+
+### 取消添加指纹
+
+	void cancelFingerprintUnlockMode(final BLELockUser user);
+
+添加指纹的过程中可以取消
+	
+### 删除指纹
+
+	void deleteFingerprintUnlockMode(UnlockMode unlockMode);
+

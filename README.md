@@ -513,7 +513,7 @@ tuyaLockDevice.getRecords(dpCodes, 0, 10, new ITuyaResultCallback<Record>() {
 **接口说明**
 
 ```java
-public void getLockHijackRecords(int offset, int limit, final ITuyaResultCallback<RecordBean> callback)
+public void getHijackRecords(int offset, int limit, final ITuyaResultCallback<RecordBean> callback)
 ```
 
 **参数说明**

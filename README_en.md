@@ -43,7 +43,7 @@ Before integrating Tuya Lock SDK, you need to do the following:
     ```groovy
     dependencies {
         ...
-       implementation 'com.tuya.smart:tuyasmart-lock-sdk:1.0.1-beta1-SNAPSHOT'
+       implementation 'com.tuya.smart:tuyasmart-lock-sdk:1.0.1'
     }
     ```
 
@@ -60,9 +60,13 @@ Before integrating Tuya Lock SDK, you need to do the following:
 The following door lock methods are encapsulated in the TuyaWifiLockDevice class, which is used after creating a TuyaWifiLockDevice object by passing in the device id:
 
 ```java
-TuyaWifiLockDevice tuyaLockDevice = new TuyaWifiLockDevice(deviceId);
+	// init sdk
+    TuyaOptimusSdk.init(getApplicationContext());
+    // get ITuyaLockManager
+    ITuyaLockManager tuyaLockManager = TuyaOptimusSdk.getManager(ITuyaLockManager.class);
+    // create ITuyaWifiLock
+    ITuyaWifiLock tuyaLockDevice = tuyaLockManager.getWifiLock("656564654c11ae0f917f");
 ```
-
 ### Door Lock Member Management
 The door lock can be divided into family members and non-family members. Family members are Tuya home family members. For details, please refer to [Family Management](https://tuyainc.github.io/tuyasmart_home_android_sdk_doc/en/resource/HomeManager.html).
 
@@ -73,12 +77,12 @@ The following describes non-family member management operations in door locks
 **Description**
 
 ```java
-public void getUsers(final ITuyaResultCallback<List<LockUserBean>> callback)
+public void getUsers(final ITuyaResultCallback<List<WifiWifiLockUser>> callback)
 ```
 
 **Parameters**
 
-**`LockUserBean` Description**
+**`WifiWifiLockUser` Description**
 
 |Field|Type|Description|
 |---|---|---|
@@ -95,15 +99,15 @@ public void getUsers(final ITuyaResultCallback<List<LockUserBean>> callback)
 **Example**
 
 ```java
-tuyaLockDevice.getUsers(new ITuyaResultCallback<List<LockUser>>() {
+tuyaLockDevice.getUsers(new ITuyaResultCallback<List<WifiLockUser>>() {
     @Override
     public void onError(String code, String message) {
         Log.e(TAG, "get lock users failed: code = " + code + "  message = " + message);
     }
 
     @Override
-    public void onSuccess(List<LockUser> wifiLockUserBean) {
-        Log.i(TAG, "get lock users success: wifiLockUserBean = " + wifiLockUserBean);
+    public void onSuccess(List<WifiLockUser> wifiLockUser) {
+        Log.i(TAG, "get lock users success: wifiLockUser = " + wifiLockUser);
     }
 });
 ```
@@ -502,7 +506,23 @@ Use the SDK to obtain the door lock hijacking record. You can query it based on 
 **Description**
 
 ```java
-public void getLockHijackRecords(ArrayList<String> dpIds, int offset, int limit, final ITuyaResultCallback<RecordBean> callback)
+public void getHijackRecords(int offset, int limit, final ITuyaResultCallback<RecordBean> callback)
+```
+
+**Example**
+
+```java
+tuyaLockDevice.getHijackRecords(0, 10, new ITuyaResultCallback<Record>() {
+    @Override
+    public void onError(String code, String message) {
+        Log.e(TAG, "get lock hijack records failed: code = " + code + "  message = " + message);
+    }
+
+    @Override
+    public void onSuccess(Record hijackingRecordBean) {
+        Log.i(TAG, "get lock hijack records success: hijackingRecordBean = " + hijackingRecordBean);
+    }
+});
 ```
 
 ### Open the Door Remotely
@@ -665,9 +685,13 @@ Before accessing the Bluetooth door lock, please configure the device.
 
 The following describes the functional interface of the Bluetooth door lock
 
-
 ```java
-TuyaBleLockDevice tuyaLockDevice = new TuyaBleLockDevice(deviceId);
+	// init sdk
+    TuyaOptimusSdk.init(getApplicationContext());
+    // get ITuyaLockManager
+    ITuyaLockManager tuyaLockManager = TuyaOptimusSdk.getManager(ITuyaLockManager.class);
+    // create ITuyaBleLock
+    ITuyaBleLock tuyaLockDevice = tuyaLockManager.getBleLock(your_device_id);
 ```
 
 ### the door lock isOnline
@@ -721,14 +745,14 @@ tuyaLockDevice.connect(new ConnectListener() {
     /**
      * get home users
      */
-    public void getHomeUsers(final ITuyaResultCallback<List<User>> callback)
+    public void getHomeUsers(final ITuyaResultCallback<List<BLELockUser>> callback)
     
 ### get lock users
 
     /**
      * get lock users
      */
-    public void getLockUsers(final ITuyaResultCallback<List<User>> callback) 
+    public void getWifiLockUsers(final ITuyaResultCallback<List<BLELockUser>> callback) 
     
 ### get user info by userId
     /**
@@ -736,7 +760,7 @@ tuyaLockDevice.connect(new ConnectListener() {
      * @param userId userId
      * @param callback callback
      */
-    public void getUser(String userId, final ITuyaResultCallback<User> callback)
+    public void getUser(String userId, final ITuyaResultCallback<BLELockUser> callback)
     
 ### get current user info
 
@@ -745,7 +769,7 @@ tuyaLockDevice.connect(new ConnectListener() {
      * @param userId userId
      * @param callback callback
      */
-    public void getCurrentUser(String userId, final ITuyaResultCallback<User> callback)
+    public void getCurrentUser(String userId, final ITuyaResultCallback<BLELockUser> callback)
     
 ### add lock user
 
@@ -780,9 +804,82 @@ tuyaLockDevice.connect(new ConnectListener() {
 ### delete lock user
 	    
 	/**
-	 * delete lock user
+	 * delete user user
 	 * @param userId userId
 	 * @param callback  callback
 	 */
-	public void deleteUser(String userId, final ITuyaResultCallback<Boolean> callback)
-	 
+	public void deleteUser(BLELockUser user, final ITuyaResultCallback<Boolean> callback)
+	
+### Get Lock Records
+
+**Example**
+
+    ArrayList<String> dpCodes = new ArrayList<>();
+    dpCodes.add(TuyaUnlockType.BLE);
+    tuyaLockDevice.getUnlockRecords(dpCodes, 0, 10, new ITuyaResultCallback<Record>() {
+        @Override
+        public void onError(String code, String message) {
+            Log.e(TAG, "get unlock records failed: code = " + code + "  message = " + message);
+        }
+
+        @Override
+        public void onSuccess(Record recordBean) {
+            Log.i(TAG, "get unlock records success: recordBean = " + recordBean);
+        }
+    });
+### Get Alerm Records
+
+**Example**
+
+    ArrayList<String> dpCodes = new ArrayList<>();
+    dpCodes.add("alarm_lock");
+    dpCodes.add("hijack");
+    dpCodes.add("doorbell");
+    tuyaLockDevice.getRecords(dpCodes, 0, 10, new ITuyaResultCallback<Record>() {
+        @Override
+        public void onError(String code, String message) {
+            Log.e(TAG, "get lock records failed: code = " + code + "  message = " + message);
+        }
+
+        @Override
+        public void onSuccess(Record recordBean) {
+            Log.i(TAG, "get lock records success: recordBean = " + recordBean);
+        }
+    });
+### Get Unlock Mode List
+
+	void getUnlockModeList(String unlockType, final ITuyaResultCallback<ArrayList<UnlockMode>> callback);
+
+### Set Unlock Mode Listener
+
+	void setUnlockModeListener(UnlockModeListener unlockModeListener);
+
+### Add Lock Password
+
+	void addPasswordUnlockMode(final BLELockUser user, String name, String password, boolean isHijack);
+
+### Update Lock Password
+
+	void updatePasswordUnlockMode(UnlockMode unlockMode, String name, String password, boolean isHijack);
+
+### Add Fingerprint
+
+	void addFingerprintUnlockMode(final BLELockUser user, String name, boolean isHijack);
+
+### Delete Password
+
+	void deletePasswordUnlockMode(UnlockMode unlockMode);
+
+### Update Fingerprint
+
+	void updateFingerprintName(UnlockMode unlockMode, String name, boolean isHijack);
+
+### Cancel Add Fingerprint
+
+	void cancelFingerprintUnlockMode(final BLELockUser user);
+
+
+### Delete Fingerprint
+
+	void deleteFingerprintUnlockMode(UnlockMode unlockMode);
+

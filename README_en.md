@@ -64,7 +64,7 @@ Before integrating Tuya Lock SDK, you need to do the following:
 
 [ WiFi Door Lock Document](en/resource/BLELockDoc.md)
 
-### Door Lock Function Points
+## Door Lock Function Points
 
 Dp means data point, it can also be called a function point.
 

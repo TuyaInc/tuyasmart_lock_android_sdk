@@ -31,6 +31,9 @@ Before integrating Tuya Lock SDK, you need to do the following:
       maven {
         url "https://maven-other.tuya.com/repository/maven-releases/"
       }
+      maven {
+        url "https://maven-other.tuya.com/repository/maven-snapshots/"
+      }
       google()
         jcenter()
       }

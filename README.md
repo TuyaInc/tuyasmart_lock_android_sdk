@@ -33,6 +33,9 @@
       // tuya maven url
       maven {
         url "https://maven-other.tuya.com/repository/maven-releases/"
+      }  
+      maven {
+        url "https://maven-other.tuya.com/repository/maven-snapshots/"
       }
       google()
         jcenter()

@@ -3,12 +3,12 @@
 The following door lock methods are encapsulated in the TuyaWifiLockDevice class, which is used after creating a TuyaWifiLockDevice object by passing in the device id:
 
 ```java
-	// init sdk
-    TuyaOptimusSdk.init(getApplicationContext());
-    // get ITuyaLockManager
-    ITuyaLockManager tuyaLockManager = TuyaOptimusSdk.getManager(ITuyaLockManager.class);
-    // create ITuyaWifiLock
-    ITuyaWifiLock tuyaLockDevice = tuyaLockManager.getWifiLock("656564654c11ae0f917f");
+// init sdk
+TuyaOptimusSdk.init(getApplicationContext());
+// get ITuyaLockManager
+ITuyaLockManager tuyaLockManager = TuyaOptimusSdk.getManager(ITuyaLockManager.class);
+// create ITuyaWifiLock
+ITuyaWifiLock tuyaLockDevice = tuyaLockManager.getWifiLock("656564654c11ae0f917f");
 ```
 ### Door Lock Member Management
 The door lock can be divided into family members and non-family members. Family members are Tuya home family members. For details, please refer to [Family Management](https://tuyainc.github.io/tuyasmart_home_android_sdk_doc/en/resource/HomeManager.html).

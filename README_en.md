@@ -58,11 +58,11 @@ Before integrating Tuya Lock SDK, you need to do the following:
 
 ## WiFi Door Lock
 
-[WIFI Door Lock Document](en/resource/WiFiLockDoc.md)
+[WiFi Door Lock Document](en/resource/WiFiLockDoc.md)
 
 ## BLE Door Lock
 
-[ WiFi Door Lock Document](en/resource/BLELockDoc.md)
+[ BLE Door Lock Document](en/resource/BLELockDoc.md)
 
 ## Door Lock Function Points
 

@@ -5,12 +5,12 @@ Before accessing the Bluetooth door lock, please configure the device.
 The following describes the functional interface of the Bluetooth door lock
 
 ```java
-	// init sdk
-    TuyaOptimusSdk.init(getApplicationContext());
-    // get ITuyaLockManager
-    ITuyaLockManager tuyaLockManager = TuyaOptimusSdk.getManager(ITuyaLockManager.class);
-    // create ITuyaBleLock
-    ITuyaBleLock tuyaLockDevice = tuyaLockManager.getBleLock(your_device_id);
+// init sdk
+TuyaOptimusSdk.init(getApplicationContext());
+// get ITuyaLockManager
+ITuyaLockManager tuyaLockManager = TuyaOptimusSdk.getManager(ITuyaLockManager.class);
+// create ITuyaBleLock
+ITuyaBleLock tuyaLockDevice = tuyaLockManager.getBleLock(your_device_id);
 ```
 
 **Permissions**
@@ -387,7 +387,7 @@ public void getCurrentUser(final ITuyaResultCallback<BLELockUser> callback)
 ```
 
 ## Get Operation Records
-   
+
 ### Get Unlocked Records
 
 **Description**
@@ -475,7 +475,7 @@ tuyaLockDevice.getRecords(dpCodes, 0, 10, new ITuyaResultCallback<Record>() {
 ```
 
 ## Unlock Mode Management
-  
+
 This section provides interfaces for setting, modifying, and deleting unlocking methods.
 
 The following figure shows the interactive process of adding an unlock method:
@@ -543,7 +543,7 @@ tuyaLockDevice.getUnlockModeList(TuyaUnlockType.PASSWORD, new ITuyaResultCallbac
 
 
 ### Register Unlock Mode Listener
-    
+
 The interfaces for adding, modifying, and deleting unlocking methods are all asynchronous calls and all return from this interface.
 
 **Description**

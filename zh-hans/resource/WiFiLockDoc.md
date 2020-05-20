@@ -3,12 +3,12 @@
 下方的门锁方法均封装在 ITuyaWifiLock 接口中, 通过传入设备 id 获取 ITuyaWifiLock 对象后使用：
 
 ```java
-	// 初始化SDK，仅需要调用一次
-    TuyaOptimusSdk.init(getApplicationContext());
-    // 获取ITuyaLockManager
-    ITuyaLockManager tuyaLockManager = TuyaOptimusSdk.getManager(ITuyaLockManager.class);
-    // 创建 ITuyaWifiLock
-    ITuyaWifiLock tuyaLockDevice = tuyaLockManager.getWifiLock("656564654c11ae0f917f");
+// 初始化SDK，仅需要调用一次
+TuyaOptimusSdk.init(getApplicationContext());
+// 获取ITuyaLockManager
+ITuyaLockManager tuyaLockManager = TuyaOptimusSdk.getManager(ITuyaLockManager.class);
+// 创建 ITuyaWifiLock
+ITuyaWifiLock tuyaLockDevice = tuyaLockManager.getWifiLock("656564654c11ae0f917f");
 ```
 
 ### 门锁成员

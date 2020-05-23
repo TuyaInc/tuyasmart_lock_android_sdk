@@ -11,7 +11,7 @@ ITuyaLockManager tuyaLockManager = TuyaOptimusSdk.getManager(ITuyaLockManager.cl
 ITuyaWifiLock tuyaLockDevice = tuyaLockManager.getWifiLock("656564654c11ae0f917f");
 ```
 
-### 门锁成员
+### 门锁用户管理
 门锁内可以分为家庭成员和非家庭成员，家庭成员为全屋智能中的概念，具体可以查阅家庭成员管理
 
 #### 获取门锁成员列表
@@ -19,7 +19,7 @@ ITuyaWifiLock tuyaLockDevice = tuyaLockManager.getWifiLock("656564654c11ae0f917f
 **接口说明**
 
 ```java
-public void getUsers(final ITuyaResultCallback<List<WifiLockUser>> callback)
+public void getLockUsers(final ITuyaResultCallback<List<WifiLockUser>> callback)
 ```
 
 **参数说明**
@@ -41,7 +41,7 @@ public void getUsers(final ITuyaResultCallback<List<WifiLockUser>> callback)
 **示例代码**
 
 ```java
-tuyaLockDevice.getUsers(new ITuyaResultCallback<List<WifiLockUser>>() {
+tuyaLockDevice.getLockUsers(new ITuyaResultCallback<List<WifiLockUser>>() {
     @Override
     public void onError(String code, String message) {
         Log.e(TAG, "get lock users failed: code = " + code + "  message = " + message);
@@ -60,7 +60,7 @@ tuyaLockDevice.getUsers(new ITuyaResultCallback<List<WifiLockUser>>() {
 使用 SDK 创建非家庭成员。以供后续开锁记录关联操作
 
 ```java
-public void addUser(final String userName, File avatarFile, final List<UnlockRelation> unlockRelations, final ITuyaResultCallback<String> callback)
+public void addLockUser(final String userName, File avatarFile, final List<UnlockRelation> unlockRelations, final ITuyaResultCallback<String> callback)
 ```
 
 **参数说明**
@@ -88,7 +88,7 @@ unlockRelation.unlockType = TuyaUnlockType.PASSWORD;
 unlockRelation.passwordNumber = 1;
 unlockRelations.add(unlockRelation);
 File avatarFile = new File(getFilesDir(), "1.png");
-tuyaLockDevice.addUser("Pan", avatarFile , unlockRelations, new ITuyaResultCallback<String>() {
+tuyaLockDevice.addLockUser("Pan", avatarFile , unlockRelations, new ITuyaResultCallback<String>() {
     @Override
     public void onError(String code, String message) {
         Log.e(TAG, "add lock user failed: code = " + code + "  message = " + message);
@@ -114,7 +114,7 @@ tuyaLockDevice.addUser("Pan", avatarFile , unlockRelations, new ITuyaResultCallb
 使用 SDK 更新门锁成员信息，包括用户名、头像、解锁密码对应关系等
 
 ```java
-public void updateUser(final String userId, final String userName, File avatarFile, final List<UnlockRelation> unlockRelations, final ITuyaResultCallback<Boolean> callback)
+public void updateLockUser(final String userId, final String userName, File avatarFile, final List<UnlockRelation> unlockRelations, final ITuyaResultCallback<Boolean> callback)
 ```
 
 **参数说明**
@@ -134,7 +134,7 @@ UnlockRelation unlockRelation = new UnlockRelation();
 unlockRelation.unlockType = TuyaUnlockType.PASSWORD;
 unlockRelation.passwordNumber = 1;
 unlockRelations.add(unlockRelation);
-tuyaLockDevice.updateUser("0000005f1g", "pan", null, unlockRelations, new ITuyaResultCallback<Boolean>() {
+tuyaLockDevice.updateLockUser("0000005f1g", "pan", null, unlockRelations, new ITuyaResultCallback<Boolean>() {
     @Override
     public void onError(String code, String message) {
         Log.e(TAG, "update lock user failed: code = " + code + "  message = " + message);
@@ -154,7 +154,7 @@ tuyaLockDevice.updateUser("0000005f1g", "pan", null, unlockRelations, new ITuyaR
 使用 SDK 删除门锁成员信息，删除成员并不会删除已有的密码
 
 ```java
-public void deleteUser(String userId, final ITuyaResultCallback<Boolean> callback)
+public void deleteLockUser(String userId, final ITuyaResultCallback<Boolean> callback)
 ```
 
 **参数说明**
@@ -166,7 +166,7 @@ public void deleteUser(String userId, final ITuyaResultCallback<Boolean> callbac
 **示例代码**
 
 ```java
-tuyaLockDevice.deleteUser("0000004pnk", new ITuyaResultCallback<Boolean>() {
+tuyaLockDevice.deleteLockUser("0000004pnk", new ITuyaResultCallback<Boolean>() {
     @Override
     public void onError(String code, String message) {
         Log.e(TAG, "delete lock user failed: code = " + code + "  message = " + message);
@@ -179,7 +179,7 @@ tuyaLockDevice.deleteUser("0000004pnk", new ITuyaResultCallback<Boolean>() {
 });
 ```
 
-### 临时密码
+### 临时密码管理
 
 使用 SDK 创建临时密码并在门锁上进行输入后即可开锁
 
@@ -342,7 +342,7 @@ tuyaLockDevice.getDynamicPassword(new ITuyaResultCallback<String>() {
 ```
 
 
-### 门锁记录
+### 获取门锁操作记录
 
 使用 SDK 获取门锁记录，包括开锁记录、门铃记录、报警记录等
 

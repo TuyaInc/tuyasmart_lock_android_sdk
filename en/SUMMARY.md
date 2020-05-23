@@ -1,0 +1,18 @@
+# Tuya Smart Lock Android SDK
+
+* [Preparation](README.md#preparation)
+  * [Preparation](README.md#preparation)
+  * [Fast Integration](README.md#fast-integration)
+  * [Term Explanation](README.md#term-explanation)
+  * [Door Lock Function Points](README.md#door-lock-function-points)
+* [BLE Door Lock Document](resource/BLELockDoc.md#)
+  * [Lock or Unlock Door with Bluetooth](resource/BLELockDoc.md#lock-or-unlock-door-with-bluetooth)
+  * [User Management](resource/BLELockDoc.md#user-management)
+  * [Get Door Lock Operation Records](resource/BLELockDoc.md#get-door-lock-operation-records)
+  * [Unlock Mode Management](resource/BLELockDoc.md#unlock-mode-management)
+* [WiFi Door Lock Document](resource/WiFiLockDoc.md#)
+  * [User Management](resource/WiFiLockDoc.md#user-management) 
+  * [Temporary Password Management](resource/WiFiLockDoc.md#temporary-password-management) 
+  * [Dynamic Password](resource/WiFiLockDoc.md#dynamic-password) 
+  * [Get Door Lock Operation Records](resource/WiFiLockDoc.md#get-door-lock-operation-records) 
+  * [Open the Door Remotely](resource/WiFiLockDoc.md#open-the-door-remotely)

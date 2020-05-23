@@ -1,8 +1,6 @@
-[Chinese Document](README.md)
-
 # Tuya Smart Lock Android SDK
 
-** The SDK is currently in the developer preview stage and is still being continuously improved. If you have any questions or suggestions, please contact us. **
+**The SDK is currently in the developer preview stage and is still being continuously improved. If you have any questions or suggestions, please contact us. **
 
 Tuya smart lock Android The SDK provides function packaging with smart door lock devices to speed up and simplify the development process of door lock application functions, including the following functions:
 
@@ -55,14 +53,6 @@ Before integrating Tuya Lock SDK, you need to do the following:
 |dpCode|The identifier of the device function point. Each function point in the device has a name and number. Please refer to [Door Lock Function Points](#door-lock-function-points)|
 |hijack|Door lock hijacking refers to setting a specific password (fingerprint, password, etc.) as the hijacking password. <br/> When the user enters this password to open the door, the door lock considers the user to open the door involuntarily, and sends the alarm information.|
 |door lock member|Door lock members are divided into family members and non-family members. <br/> Family members are members who are added to the user's family. The door lock can be used to manage family members and set the unlock mode. <br/> Non-family members are members created in door locks and can be managed through door lock related interfaces.|
-
-## WiFi Door Lock
-
-[WiFi Door Lock Document](en/resource/WiFiLockDoc.md)
-
-## BLE Door Lock
-
-[ BLE Door Lock Document](en/resource/BLELockDoc.md)
 
 ## Door Lock Function Points
 

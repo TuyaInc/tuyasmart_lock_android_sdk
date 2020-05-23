@@ -386,7 +386,7 @@ public void getUser(String userId, final ITuyaResultCallback<BLELockUser> callba
 public void getCurrentUser(final ITuyaResultCallback<BLELockUser> callback)
 ```
 
-## Get Operation Records
+## Get Door Lock Operation Records
 
 ### Get Unlocked Records
 

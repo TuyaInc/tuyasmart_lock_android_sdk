@@ -10,7 +10,7 @@ ITuyaLockManager tuyaLockManager = TuyaOptimusSdk.getManager(ITuyaLockManager.cl
 // create ITuyaWifiLock
 ITuyaWifiLock tuyaLockDevice = tuyaLockManager.getWifiLock("656564654c11ae0f917f");
 ```
-### Door Lock Member Management
+### User Management
 The door lock can be divided into family members and non-family members. Family members are Tuya home family members. For details, please refer to [Family Management](https://tuyainc.github.io/tuyasmart_home_android_sdk_doc/en/resource/HomeManager.html).
 
 The following describes non-family member management operations in door locks
@@ -20,7 +20,7 @@ The following describes non-family member management operations in door locks
 **Description**
 
 ```java
-public void getUsers(final ITuyaResultCallback<List<WifiWifiLockUser>> callback)
+public void getLockUsers(final ITuyaResultCallback<List<WifiWifiLockUser>> callback)
 ```
 
 **Parameters**
@@ -42,7 +42,7 @@ public void getUsers(final ITuyaResultCallback<List<WifiWifiLockUser>> callback)
 **Example**
 
 ```java
-tuyaLockDevice.getUsers(new ITuyaResultCallback<List<WifiLockUser>>() {
+tuyaLockDevice.getLockUsers(new ITuyaResultCallback<List<WifiLockUser>>() {
     @Override
     public void onError(String code, String message) {
         Log.e(TAG, "get lock users failed: code = " + code + "  message = " + message);
@@ -61,7 +61,7 @@ tuyaLockDevice.getUsers(new ITuyaResultCallback<List<WifiLockUser>>() {
 Create non-family members. 
 
 ```java
-public void addUser(final String userName, File avatarFile, final List<UnlockRelation> unlockRelations, final ITuyaResultCallback<String> callback)
+public void addLockUser(final String userName, File avatarFile, final List<UnlockRelation> unlockRelations, final ITuyaResultCallback<String> callback)
 ```
 
 **Parameters**
@@ -89,7 +89,7 @@ unlockRelation.unlockType = TuyaUnlockType.PASSWORD;
 unlockRelation.passwordNumber = 1;
 unlockRelations.add(unlockRelation);
 File avatarFile = new File(getFilesDir(), "1.png");
-tuyaLockDevice.addUser("Pan", avatarFile , unlockRelations, new ITuyaResultCallback<String>() {
+tuyaLockDevice.addLockUser("Pan", avatarFile , unlockRelations, new ITuyaResultCallback<String>() {
     @Override
     public void onError(String code, String message) {
         Log.e(TAG, "add lock user failed: code = " + code + "  message = " + message);
@@ -113,7 +113,7 @@ When the door lock uses a password or other unlocking method, the unlocking reco
 Use SDK to update door lock member information, including username, avatar, unlock password correspondence, etc.
 
 ```java
-public void updateUser(final String userId, final String userName, File avatarFile, final List<UnlockRelation> unlockRelations, final ITuyaResultCallback<Boolean> callback)
+public void updateLockUser(final String userId, final String userName, File avatarFile, final List<UnlockRelation> unlockRelations, final ITuyaResultCallback<Boolean> callback)
 ```
 
 **Parameters**
@@ -133,7 +133,7 @@ UnlockRelation unlockRelation = new UnlockRelation();
 unlockRelation.unlockType = TuyaUnlockType.PASSWORD;
 unlockRelation.passwordNumber = 1;
 unlockRelations.add(unlockRelation);
-tuyaLockDevice.updateUser("0000005f1g", "pan", null, unlockRelations, new ITuyaResultCallback<Boolean>() {
+tuyaLockDevice.updateLockUser("0000005f1g", "pan", null, unlockRelations, new ITuyaResultCallback<Boolean>() {
     @Override
     public void onError(String code, String message) {
         Log.e(TAG, "update lock user failed: code = " + code + "  message = " + message);
@@ -153,7 +153,7 @@ tuyaLockDevice.updateUser("0000005f1g", "pan", null, unlockRelations, new ITuyaR
 Use the SDK to delete door lock member information. Deleting members does not delete existing passwords
 
 ```java
-public void deleteUser(String userId, final ITuyaResultCallback<Boolean> callback)
+public void deleteLockUser(String userId, final ITuyaResultCallback<Boolean> callback)
 ```
 
 **Parameters**
@@ -165,7 +165,7 @@ public void deleteUser(String userId, final ITuyaResultCallback<Boolean> callbac
 **Example**
 
 ```java
-tuyaLockDevice.deleteUser("0000004pnk", new ITuyaResultCallback<Boolean>() {
+tuyaLockDevice.deleteLockUser("0000004pnk", new ITuyaResultCallback<Boolean>() {
     @Override
     public void onError(String code, String message) {
         Log.e(TAG, "delete lock user failed: code = " + code + "  message = " + message);
@@ -178,7 +178,7 @@ tuyaLockDevice.deleteUser("0000004pnk", new ITuyaResultCallback<Boolean>() {
 });
 ```
 
-### Temporary Password
+### Temporary Password Management
 
 Use the SDK to create a temporary password and enter it on the door lock to unlock it.
 
@@ -341,7 +341,7 @@ tuyaLockDevice.getDynamicPassword(new ITuyaResultCallback<String>() {
 ```
 
 
-### Lock Record
+### Get Door Lock Operation Records
 
 Use SDK to obtain door lock records, including unlock records, doorbell records, alarm records, etc.
 

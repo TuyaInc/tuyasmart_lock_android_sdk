@@ -151,7 +151,7 @@ public void lock()
 tuyaLockDevice.lock();
 ```
 
-## 用户管理
+## 门锁用户管理
 门锁内可以分为家庭成员和非家庭成员，家庭成员为全屋智能中的概念，具体可以查阅家庭成员管理
 
 ### 获取家庭用户
@@ -387,7 +387,7 @@ public void getUser(String userId, final ITuyaResultCallback<BLELockUser> callba
 public void getCurrentUser(final ITuyaResultCallback<BLELockUser> callback)
 ```
 
-## 获取操作记录
+## 获取门锁操作记录
 
 ### 获取解锁记录
 

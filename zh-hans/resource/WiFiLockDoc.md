@@ -1,6 +1,24 @@
-## WIFI门锁功能接入
+# Wi-Fi 门锁功能说明
 
-下方的门锁方法均封装在 ITuyaWifiLock 接口中, 通过传入设备 id 获取 ITuyaWifiLock 对象后使用：
+## 专有名词解释
+
+|                       | 介绍                                                         |
+| --------------------- | ------------------------------------------------------------ |
+|dpCode|设备功能点的标识符。设备中的每个功能点都有名称和编号，可参考[Wi-Fi 门锁功能点列表](#wi-fi-门锁功能点列表)|
+| 劫持                  | 门锁劫持是指将录入特定的密码（指纹、密码等），设置为劫持密码，当受到劫持使用该密码进行开锁时，被迫开门，门锁将防劫持特殊开门报警信息发送至家人手机或物业管理系统。 |
+| 门锁成员              | 门锁成员分为家庭成员与非家庭成员。<br />家庭成员即为涂鸦全屋智能的家庭成员概念，门锁内可将对应的门锁密码编号与该账号关联起来；<br />非家庭成员即为门锁内的成员，跟随设备关联，可以创建并分配，门锁内可将对应的门锁密码编号与该成员关联起来。 |
+
+## 使用说明
+
+| 类名               | 说明                                 |
+| ------------------ | ------------------------------------ |
+| `TuyaOptimusSdk`   | 初始化SDK入口，用来获取门锁管理类    |
+| `ITuyaLockManager` | 门锁管理类，可以获取不同类型的门锁类 |
+| `ITuyaWifiLock` | WiFi 门锁类，所有 WiFi 门锁相关方法都在其中 |
+
+**示例代码**
+
+通过设备 id 创建 WiFi 门锁类。
 
 ```java
 // 初始化SDK，仅需要调用一次
@@ -8,13 +26,15 @@ TuyaOptimusSdk.init(getApplicationContext());
 // 获取ITuyaLockManager
 ITuyaLockManager tuyaLockManager = TuyaOptimusSdk.getManager(ITuyaLockManager.class);
 // 创建 ITuyaWifiLock
-ITuyaWifiLock tuyaLockDevice = tuyaLockManager.getWifiLock("656564654c11ae0f917f");
+ITuyaWifiLock tuyaLockDevice = tuyaLockManager.getWifiLock("your_lock_device_id");
 ```
 
-### 门锁用户管理
-门锁内可以分为家庭成员和非家庭成员，家庭成员为全屋智能中的概念，具体可以查阅家庭成员管理
+## 门锁成员管理
+门锁内可以分为家庭成员和非家庭成员，家庭成员为全屋智能中的概念，具体可以查阅[家庭成员管理](https://tuyainc.github.io/tuyasmart_home_android_sdk_doc/zh-hans/resource/HomeMember.html)
 
-#### 获取门锁成员列表
+以下介绍在门锁中的非家庭成员管理操作：
+
+### 获取门锁成员列表
 
 **接口说明**
 
@@ -32,7 +52,7 @@ public void getLockUsers(final ITuyaResultCallback<List<WifiLockUser>> callback)
 |userName| String |用户昵称|
 |avatarUrl| String |头像地址|
 |contact| String |联系方式|
-|unlockRelations|List<UnlockRelationBean>|开锁方式及密码编号|
+|unlockRelations|List<UnlockRelation>|开锁方式及密码编号|
 |devId| String |门锁设备 id|
 |ownerId| String |所属家庭 id|
 |userType|int|门锁成员类型，1: 家庭成员 2: 非家庭成员|
@@ -54,7 +74,7 @@ tuyaLockDevice.getLockUsers(new ITuyaResultCallback<List<WifiLockUser>>() {
 });
 ```
 
-#### 创建门锁成员
+### 创建门锁成员
 **接口说明**
 
 使用 SDK 创建非家庭成员。以供后续开锁记录关联操作
@@ -69,7 +89,7 @@ public void addLockUser(final String userName, File avatarFile, final List<Unloc
 |----|----|----|
 |userName|否|成员名称|
 | avatarFile |是|图片文件，不传则为默认头像|
-| unlockRelationBeans |否|成员解锁方式与密码编号的关联关系|
+| unlockRelations |否|成员解锁方式与密码编号的关联关系|
 
 **`UnlockRelationBean` 数据 bean 字段说明**
 
@@ -108,7 +128,7 @@ tuyaLockDevice.addLockUser("Pan", avatarFile , unlockRelations, new ITuyaResultC
 当门锁使用密码或其他解锁方式后，可以获取解锁记录，然后可以将解锁记录中的解锁方式分配给某个用户。
 
 
-#### 更新门锁成员信息
+### 更新门锁成员信息
 **接口说明**
 
 使用 SDK 更新门锁成员信息，包括用户名、头像、解锁密码对应关系等
@@ -147,7 +167,7 @@ tuyaLockDevice.updateLockUser("0000005f1g", "pan", null, unlockRelations, new IT
 });
 ```
 
-#### 删除门锁成员
+### 删除门锁成员
 
 **接口说明**
 
@@ -179,58 +199,28 @@ tuyaLockDevice.deleteLockUser("0000004pnk", new ITuyaResultCallback<Boolean>() {
 });
 ```
 
-### 临时密码管理
+## 临时密码
 
 使用 SDK 创建临时密码并在门锁上进行输入后即可开锁
 
-#### 创建临时密码
-**接口说明**
+```sequence
+title: 临时密码开门
 
-临时密码可以自定义密码的有效期间，当创建完成后，需要在门锁设备上进行同步
+participant 门锁
+participant 用户
+participant app
+participant 云端
 
-```java
-public void createTempPassword(TempPassword tempPassword, final ITuyaResultCallback<Boolean> callback)
+note over 用户: 输入 7 位纯数字临时密码
+app->云端: 创建临时密码
+云端-->app: 返回创建结果
+用户->门锁: 在门锁上输入密码，让设备触发更新密码列表
+note over 门锁: 更新密码列表
+用户->门锁: 输入密码
+note over 门锁: 执行
 ```
 
-**参数说明**
-
-`TempPassword`通过TempPassword.Builder创建，具体参考下面的代码示例。
-
-下面为该类的字段说明：
-
-|参数|能否为空|说明|
-|---|---|---|
-|name|否|密码名称|
-|password|否|临时密码，纯数字，7 位|
-|effectiveDate|否|密码生效时间戳，单位 ms|
-|invalidDate|否|密码失效时间，单位 ms|
-|countryCode|是|国家码，例如 86|
-|phone|是|手机号码，当创建成功时，会通知给该手机用户|
-
-手机号和国家码可以不传，如果传了需要购买短信服务才会生效。
-
-**示例代码**
-
-```java
-TempPasswordBuilder tempPasswordBuilder = new TempPasswordBuilder()
-        .name("Liam's password")
-        .password("1231231")
-        .effectiveTime(System.currentTimeMillis())
-        .invalidTime(System.currentTimeMillis() + 24 * 60 * 60 * 1000);
-tuyaLockDevice.createTempPassword(tempPasswordBuilder, new ITuyaResultCallback<Boolean>() {
-    @Override
-    public void onError(String code, String message) {
-        Log.e(TAG, "create lock temp password: code = " + code + "  message = " + message);
-    }
-
-    @Override
-    public void onSuccess(Boolean result) {
-        Log.i(TAG, "add lock user success");
-    }
-});
-```
-
-#### 获取临时密码列表
+### 获取临时密码列表
 
 **接口说明**
 
@@ -282,7 +272,54 @@ tuyaLockDevice.getTempPasswords(new ITuyaResultCallback<List<TempPassword>>() {
 });
 ```
 
-#### 删除临时密码
+### 创建临时密码
+**接口说明**
+
+临时密码可以自定义密码的有效期间，当创建完成后，需要在门锁设备上进行同步
+
+```java
+public void createTempPassword(TempPassword tempPassword, final ITuyaResultCallback<Boolean> callback)
+```
+
+**参数说明**
+
+`TempPassword`通过TempPassword.Builder创建，具体参考下面的代码示例。
+
+下面为该类的字段说明：
+
+|参数|能否为空|说明|
+|---|---|---|
+|name|否|密码名称|
+|password|否|临时密码，纯数字，7 位|
+|effectiveDate|否|密码生效时间戳，单位 ms|
+|invalidDate|否|密码失效时间，单位 ms|
+|countryCode|是|国家码，例如 86|
+|phone|是|手机号码，当创建成功时，会通知给该手机用户|
+
+手机号和国家码可以不传，如果传了需要购买短信服务才会生效。
+
+**示例代码**
+
+```java
+TempPasswordBuilder tempPasswordBuilder = new TempPasswordBuilder()
+        .name("Liam's password")
+        .password("1231231")
+        .effectiveTime(System.currentTimeMillis())
+        .invalidTime(System.currentTimeMillis() + 24 * 60 * 60 * 1000);
+tuyaLockDevice.createTempPassword(tempPasswordBuilder, new ITuyaResultCallback<Boolean>() {
+    @Override
+    public void onError(String code, String message) {
+        Log.e(TAG, "create lock temp password: code = " + code + "  message = " + message);
+    }
+
+    @Override
+    public void onSuccess(Boolean result) {
+        Log.i(TAG, "add lock user success");
+    }
+});
+```
+
+### 删除临时密码
 
 **接口说明**
 
@@ -314,11 +351,28 @@ tuyaLockDevice.deleteTempPassword(1111, new ITuyaResultCallback<Boolean>() {
 });
 ```
 
-### 动态密码
+## 动态密码
 
 使用 SDK 获取动态密码并在门锁上进行输入后即可开锁，动态密码有效时间为 5 分钟
 
-#### 获取动态密码
+```sequence
+title: 动态密码开门
+
+participant 门锁
+participant 用户
+participant app
+participant 云端
+
+app->云端: 请求获取动态密码
+云端-->app: 返回动态密码结果
+app-->用户: 传达密码
+note over 用户: 得到动态密码
+用户->门锁: 输入动态密码
+note over 门锁: 执行
+
+```
+
+### 获取动态密码
 **接口说明**
 
 ```java
@@ -342,147 +396,25 @@ tuyaLockDevice.getDynamicPassword(new ITuyaResultCallback<String>() {
 ```
 
 
-### 获取门锁操作记录
-
-使用 SDK 获取门锁记录，包括开锁记录、门铃记录、报警记录等
-
-#### 获取门锁记录
-
-获取门锁记录接口可根据传入的功能点获取对应的开锁记录。
-
-**接口说明**
-
-```java
-public void getRecords(ArrayList<String> dpCodes, int offset, int limit, final ITuyaResultCallback<RecordBean> callback)
-```
-
-**参数说明**
-
-|参数|说明|
-|---|---|
-|dpCodes|需要查询劫持的记录的解锁方式 dp code，具体可以参考[Wi-Fi 门锁功能点列表](#Wi-Fi-门锁功能点列表)|
-|offset|页数|
-|limit|条数|
-
-**callback返回的参数说明**
-
-`RecordBean`字段说明
-
-|字段|类型|描述|
-|---|---|---|
-|totalCount|int|总条目|
-|hasNext|boolean|是否有下一页|
-|datas|List<DataBean>|记录数据内容|
-
-其中`DataBean`字段说明如下：
-
-|字段|类型|描述|
-|---|---|---|
-|userId|String|成员 id|
-|avatarUrl|String|头像 url|
-|userName| String |用户昵称|
-|createTime|long|该条记录的时间戳，单位 ms|
-|devId| String |设备 id|
-|dpCodesMap|HashMap<String, Object>|该记录的 dpCode和value 数据|
-|unlockRelation|UnlockRelation|解锁类型和解锁密码编号的关系实例，如不是开锁记录，可为空|
-|tags|int|标位，0 表示其他，1 表示劫持报警|
-
-**提示**
-
-你可以通过查询开锁记录，获得`unlockRelation`，然后分配给创建的用户。
-
-比如你在门锁上创建了一个密码，然后使用了该密码开锁，这样就产生了一条开锁记录。app端查询到这条开锁记录，就可以将密码分配给你想分配的用户。
-
-**代码示例**
-
-获取开门记录：可传入开门相关功能点，即可获取开门记录
-
-```java
-ArrayList<String> dpCodes = new ArrayList<>();
-dpCodes.add("unlock_fingerprint");
-dpCodes.add("unlock_password");
-dpCodes.add("unlock_temporary");
-dpCodes.add("unlock_dynamic");
-dpCodes.add("unlock_card");
-dpCodes.add("unlock_face");
-dpCodes.add("unlock_key");
-dpCodes.add("unlock_app");
-dpCodes.add("unlock_eye");
-dpCodes.add("unlock_hand");
-dpCodes.add("unlock_finger_vein");
-tuyaLockDevice.getRecords(dpCodes, 0, 10, new ITuyaResultCallback<Record>() {
-    @Override
-    public void onError(String code, String message) {
-        Log.e(TAG, "get unlock records failed: code = " + code + "  message = " + message);
-    }
-
-    @Override
-    public void onSuccess(Record recordBean) {
-        Log.i(TAG, "get unlock records success: recordBean = " + recordBean);
-    }
-});
-```
-
-获取门锁告警记录：传入告警功能点，获取告警记录
-
-```java
-ArrayList<String> dpCodes = new ArrayList<>();
-dpCodes.add("alarm_lock");
-dpCodes.add("hijack");
-dpCodes.add("doorbell");
-tuyaLockDevice.getRecords(dpCodes, 0, 10, new ITuyaResultCallback<Record>() {
-    @Override
-    public void onError(String code, String message) {
-        Log.e(TAG, "get lock records failed: code = " + code + "  message = " + message);
-    }
-
-    @Override
-    public void onSuccess(Record recordBean) {
-        Log.i(TAG, "get lock records success: recordBean = " + recordBean);
-    }
-});
-```
-
-#### 获取门锁劫持记录
-
-使用 SDK 获取门锁劫持开门记录
-
-**接口说明**
-
-```java
-public void getHijackRecords(int offset, int limit, final ITuyaResultCallback<RecordBean> callback)
-```
-
-**参数说明**
-
-|参数|说明|
-|---|---|
-|offset|页数|
-|limit|条数|
-
-**代码示例**
-
-```java
-tuyaLockDevice.getHijackRecords(0, 10, new ITuyaResultCallback<Record>() {
-    @Override
-    public void onError(String code, String message) {
-        Log.e(TAG, "get lock hijack records failed: code = " + code + "  message = " + message);
-    }
-
-    @Override
-    public void onSuccess(Record hijackingRecordBean) {
-        Log.i(TAG, "get lock hijack records success: hijackingRecordBean = " + hijackingRecordBean);
-    }
-});
-```
-
-### 远程开门
+## 远程开门
 
 在门锁上触发远程开门请求后，使用 SDK 可以进行远程开门
 
-远程开门需要注册远程开门监听，收到门锁的远程开门请求后，调用远程开门接口即可。
+```sequence
+Title: 门锁远程开门流程
 
-#### 注册远程开门监听
+participant 用户
+participant 门锁
+participant app
+
+用户->门锁: 操作门锁(4+#)
+门锁->app: 发起远程开门请求
+note over app: 收到门锁请求，通知门锁拥有者决定确认是否开门
+app-->门锁: 发送开门结果
+note over 门锁: 处理结果
+```
+
+### 注册远程开门监听
 
 **接口说明**
 
@@ -505,7 +437,7 @@ void onReceive(String devId, int second);
 |devId |String|设备 id|
 |second |int|需要在多少秒内处理|
 
-#### 请求远程开锁
+### 请求远程开锁
 
 **接口说明**
 
@@ -519,7 +451,7 @@ public void replyRemoteUnlock(boolean allow, final ITuyaResultCallback<Boolean> 
 |---|---|---|
 | allow |boolean|是否允许开锁|
 
-#### 远程开锁调用示例
+**示例代码**
 
 ```java
 @Override
@@ -589,3 +521,188 @@ private void replyRemoteUnlockRequest(boolean allow) {
     });
 }
 ```
+
+## 门锁记录
+
+使用 SDK 获取门锁记录，包括开锁记录、门铃记录、报警记录等
+
+### 获取门锁记录
+
+获取门锁记录接口可根据传入的功能点获取对应的开锁记录。
+
+**接口说明**
+
+```java
+public void getRecords(ArrayList<String> dpCodes, int offset, int limit, final ITuyaResultCallback<Record> callback)
+```
+
+**参数说明**
+
+|参数|说明|
+|---|---|
+|dpCodes|需要查询劫持的记录的解锁方式 dp code，具体可以参考[Wi-Fi 门锁功能点列表](#Wi-Fi-门锁功能点列表)|
+|offset|页数|
+|limit|条数|
+
+**callback返回的参数说明**
+
+`Record`字段说明
+
+|字段|类型|描述|
+|---|---|---|
+|totalCount|int|总条目|
+|hasNext|boolean|是否有下一页|
+|datas|List<DataBean>|记录数据内容|
+
+其中`DataBean`字段说明如下：
+
+|字段|类型|描述|
+|---|---|---|
+|userId|String|成员 id|
+|avatarUrl|String|头像 url|
+|userName| String |用户昵称|
+|createTime|long|该条记录的时间戳，单位 ms|
+|devId| String |设备 id|
+|dpCodesMap|HashMap<String, Object>|该记录的 dpCode和value 数据|
+|unlockRelation|UnlockRelation|解锁类型和解锁密码编号的关系实例，如不是开锁记录，可为空|
+|tags|int|标位，0 表示其他，1 表示劫持报警|
+
+**提示**
+
+你可以通过查询开锁记录，获得`unlockRelation`，然后分配给创建的用户。
+
+比如你在门锁上创建了一个密码，然后使用了该密码开锁，这样就产生了一条开锁记录。app端查询到这条开锁记录，就可以将密码分配给你想分配的用户。
+
+**示例代码**
+
+可传入开门相关功能点，即可获取门锁记录
+
+```java
+ArrayList<String> dpCodes = new ArrayList<>();
+dpCodes.add("alarm_lock");
+dpCodes.add("hijack");
+dpCodes.add("doorbell");
+tuyaLockDevice.getRecords(dpCodes, 0, 10, new ITuyaResultCallback<Record>() {
+    @Override
+    public void onError(String code, String message) {
+        Log.e(TAG, "get unlock records failed: code = " + code + "  message = " + message);
+    }
+
+    @Override
+    public void onSuccess(Record recordBean) {
+        Log.i(TAG, "get unlock records success: recordBean = " + recordBean);
+    }
+});
+```
+### 获取解锁记录
+
+使用 SDK 获取门锁的开门记录，包括指纹解锁、普通密码解锁、临时密码解锁、动态密码解锁、卡片解锁、人脸识别解锁、钥匙解锁记录。
+
+**接口说明**
+
+```java
+/**
+ * get unlock records
+ * @param unlockTypes unlock type list 
+ * @param offset page number
+ * @param limit item count
+ * @param callback callback
+ */
+void getUnlockRecords(int offset, int limit, final ITuyaResultCallback<Record> callback);
+```
+
+**参数说明**
+
+|参数|说明|
+|---|---|
+| offset |记录页码|
+| limit |返回的记录条目数量|
+
+
+**示例代码**
+
+```java
+tuyaLockDevice.getUnlockRecords(0, 10, new ITuyaResultCallback<Record>() {
+    @Override
+    public void onError(String code, String message) {
+        Log.e(TAG, "get unlock records failed: code = " + code + "  message = " + message);
+    }
+
+    @Override
+    public void onSuccess(Record recordBean) {
+        Log.i(TAG, "get unlock records success: recordBean = " + recordBean);
+    }
+});
+```
+
+### 获取门锁劫持记录
+
+使用 SDK 获取门锁劫持开门记录
+
+**接口说明**
+
+```java
+public void getHijackRecords(int offset, int limit, final ITuyaResultCallback<RecordBean> callback)
+```
+
+**参数说明**
+
+|参数|说明|
+|---|---|
+|offset|页数|
+|limit|条数|
+
+**代码示例**
+
+```java
+tuyaLockDevice.getHijackRecords(0, 10, new ITuyaResultCallback<Record>() {
+    @Override
+    public void onError(String code, String message) {
+        Log.e(TAG, "get lock hijack records failed: code = " + code + "  message = " + message);
+    }
+
+    @Override
+    public void onSuccess(Record hijackingRecordBean) {
+        Log.i(TAG, "get lock hijack records success: hijackingRecordBean = " + hijackingRecordBean);
+    }
+});
+```
+
+## Wi-Fi 门锁功能点列表
+
+| dp name              | dp code                        |
+| -------------------- | ------------------------------ |
+| 指纹解锁             | unlock\_fingerprint            |
+| 普通密码解锁         | unlock\_password               |
+| 临时密码解锁         | unlock\_temporary              |
+| 动态密码解锁         | unlock\_dynamic                |
+| 卡片解锁             | unlock\_card                   |
+| 人脸识别解锁         | unlock\_face                   |
+| 钥匙解锁             | unlock\_key                    |
+| 告警                 | alarm\_lock                    |
+| 远程开门请求倒计时   | unlock\_request                |
+| 远程开门请求回复     | reply\_unlock\_request         |
+| 电池电量状态         | battery\_state                 |
+| 剩余电量             | residual\_electricity          |
+| 反锁状态             | reverse\_lock                  |
+| 童锁状态             | child\_lock                    |
+| App远程解锁wifi门锁  | unlock\_app                    |
+| 劫持告警             | hijack                         |
+| 从门内侧打开门锁     | open\_inside                   |
+| 开合状态             | closed\_opened                 |
+| 门铃呼叫             | doorbell                       |
+| 短信通知             | message                        |
+| 上提反锁             | anti\_lock\_outside            |
+| 虹膜解锁             | unlock\_eye                    |
+| 掌纹解锁             | unlock\_hand                   |
+| 指静脉解锁           | unlock\_finger\_vein           |
+| 同步所有指纹编号     | update\_all\_finger            |
+| 同步所有密码编号     | update\_all\_password          |
+| 同步所有卡编号       | update\_all\_card              |
+| 同步所有人脸编号     | update\_all\_face              |
+| 同步所有虹膜编号     | update\_all\_eye               |
+| 同步所有掌纹编号     | update\_all\_hand              |
+| 同步所有指静脉编号   | update\_all\_fin\_vein         |
+| 离线密码解锁上报     | unlock\_offline\_pd            |
+| 离线密码清空上报     | unlock\_offline\_clear         |
+| 单条离线密码清空上报 | unlock\_offline\_clear\_single |

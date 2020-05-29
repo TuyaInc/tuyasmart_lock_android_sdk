@@ -1,6 +1,22 @@
-## Tuya WiFi Lock
+# Tuya Wi-Fi Lock Instructions
 
-The following door lock methods are encapsulated in the TuyaWifiLockDevice class, which is used after creating a TuyaWifiLockDevice object by passing in the device id:
+## Term Explanation
+
+| Term             | Explanation                                                  |
+| ---------------- | ------------------------------------------------------------ |
+|dpCode|The identifier of the device function point. Each function point in the device has a name and number. Please refer to [Wi-Fi Door Lock Function Points](#wi-fi-door-lock-function-points)|
+| hijack           | Door lock hijacking refers to setting a specific password (fingerprint, password, etc.) as the hijacking password. <br/> When the user enters this password to open the door, the door lock considers the user to open the door involuntarily, and sends the alarm information to the family's mobile phone or property management system. |
+| door lock member | Door lock members are divided into family members and non-family members. <br/> Family members are members who are added to the user's family. The door lock can be used to manage family members and set the unlock mode. <br/> Non-family members are members created in door locks and can be managed through door lock related interfaces. |
+
+## Description
+
+| Class Name                    | **Description**                                              |
+| ----------------------------- | ------------------------------------------------------------ |
+| `TuyaOptimusSdk`   | SDK init class, used to create `ITuyaLockManager` |
+| `ITuyaLockManager` | Lock manager class, used to create `ITuyaWifiLock` |
+| `ITuyaWifiLock` | Wi-Fi door lock class, all Wi-Fi door lock APIs are in it |
+
+Create `ITuyaWifiLock` by device id:
 
 ```java
 // init sdk
@@ -8,19 +24,19 @@ TuyaOptimusSdk.init(getApplicationContext());
 // get ITuyaLockManager
 ITuyaLockManager tuyaLockManager = TuyaOptimusSdk.getManager(ITuyaLockManager.class);
 // create ITuyaWifiLock
-ITuyaWifiLock tuyaLockDevice = tuyaLockManager.getWifiLock("656564654c11ae0f917f");
+ITuyaWifiLock tuyaLockDevice = tuyaLockManager.getWifiLock("your_lock_device_id");
 ```
-### User Management
+## Member Management
 The door lock can be divided into family members and non-family members. Family members are Tuya home family members. For details, please refer to [Family Management](https://tuyainc.github.io/tuyasmart_home_android_sdk_doc/en/resource/HomeManager.html).
 
-The following describes non-family member management operations in door locks
+The following describes non-family member management operations in door locks:
 
-#### Get Door Lock Members
+### Get Door Lock Members
 
 **Description**
 
 ```java
-public void getLockUsers(final ITuyaResultCallback<List<WifiWifiLockUser>> callback)
+public void getLockUsers(final ITuyaResultCallback<List<WifiLockUser>> callback)
 ```
 
 **Parameters**
@@ -55,7 +71,7 @@ tuyaLockDevice.getLockUsers(new ITuyaResultCallback<List<WifiLockUser>>() {
 });
 ```
 
-#### Create a Door Lock Member
+### Create a Door Lock Member
 **Description**
 
 Create non-family members. 
@@ -70,7 +86,7 @@ public void addLockUser(final String userName, File avatarFile, final List<Unloc
 |----|----|----|
 |userName|No|user name|
 | avatarFile |Yes|file of avatar|
-| unlockRelationBeans |No|list of UnlockRelationBean|
+| unlockRelations |No|list of UnlockRelationBean|
 
 **`UnlockRelationBean` Description**
 
@@ -107,7 +123,7 @@ tuyaLockDevice.addLockUser("Pan", avatarFile , unlockRelations, new ITuyaResultC
 
 When the door lock uses a password or other unlocking method, the unlocking record can be obtained, and then the unlocking method in the unlocking record can be assigned to a user.
 
-#### Update a Door Lock Member Information
+### Update a Door Lock Member Information
 **Description**
 
 Use SDK to update door lock member information, including username, avatar, unlock password correspondence, etc.
@@ -146,7 +162,7 @@ tuyaLockDevice.updateLockUser("0000005f1g", "pan", null, unlockRelations, new IT
 });
 ```
 
-#### Delete a Door Lock Member
+### Delete a Door Lock Member
 
 **Description**
 
@@ -178,11 +194,27 @@ tuyaLockDevice.deleteLockUser("0000004pnk", new ITuyaResultCallback<Boolean>() {
 });
 ```
 
-### Temporary Password Management
+## Temporary Password
 
 Use the SDK to create a temporary password and enter it on the door lock to unlock it.
 
-#### Create Temporary Password
+```sequence
+title: Unlock with temporary password
+participant lock
+participant user
+participant app
+participant server
+
+note over user: enter a 7-digit, numeric-only temporary password
+app -> server: create temporary password
+server --> app: return result
+user -> lock: enter the password on the door lock, \nand the device trigger the update of the password list
+note over lock: update of the password list
+user -> lock: enter password 
+note over lock: execute
+```
+
+### Create Temporary Password
 **Description**
 
 The temporary password can customize the validity period of the password. When the password is created, it needs to be synchronized on the door lock device.
@@ -229,7 +261,7 @@ tuyaLockDevice.createTempPassword(tempPasswordBuilder, new ITuyaResultCallback<B
 });
 ```
 
-#### Get Temporary Passwords
+### Get Temporary Passwords
 
 **Description**
 
@@ -281,7 +313,7 @@ tuyaLockDevice.getTempPasswords(new ITuyaResultCallback<List<TempPassword>>() {
 });
 ```
 
-#### Delete Temporary Password
+### Delete Temporary Password
 
 **Description**
 
@@ -313,11 +345,27 @@ tuyaLockDevice.deleteTempPassword(1111, new ITuyaResultCallback<Boolean>() {
 });
 ```
 
-### Dynamic Password
+## Dynamic Password
 
 Use the SDK to get a dynamic password and enter it on the door lock to unlock. The dynamic password is valid for 5 minutes.
 
-#### Get Dynamic Password
+```sequence
+title: Unlock with dynamic password
+participant lock
+participant user
+participant app
+participant server
+
+app -> server: Request for dynamic password
+server --> app: Returns dynamic password results
+app --> user: Send password
+note over user: Get dynamic password
+user -> lock: Input dynamic password
+note over lock: Execute
+
+```
+
+### Get Dynamic Password
 **Description**
 
 ```java
@@ -340,141 +388,28 @@ tuyaLockDevice.getDynamicPassword(new ITuyaResultCallback<String>() {
 });
 ```
 
-
-### Get Door Lock Operation Records
-
-Use SDK to obtain door lock records, including unlock records, doorbell records, alarm records, etc.
-
-#### Get Door Lock Records
-
-**Description**
-
-```java
-public void getRecords(ArrayList<String> dpIds, int offset, int limit, final ITuyaResultCallback<RecordBean> callback)
-```
-
-**Parameters**
-
-|Parameter|Description|
-|---|---|
-|dpIds|Need to query the unlocking method dp id. For details, refer to the function definition of the door lock of the corresponding device.|
-|offset|page offset|
-|limit|item count in one page|
-
-**Parameters in callback**
-
-`RecordBean`  Description
-
-|Field|Type|Description|
-|---|---|---|
-|totalCount|int|total count of records|
-|hasNext|boolean|has next page|
-|datas|List<DataBean>|the list of records|
-
-`DataBean` Description
-
-|Field|Type|Description|
-|---|---|---|
-|userId|String|user id|
-|avatarUrl|String|user avatar url|
-|userName| String |user name|
-|createTime|long|create timestamp, unit ms|
-|devId| String |device id|
-|dpCodesMap|HashMap<String, Object>|dp data of this record|
-|unlockRelation|UnlockRelation| The relationship between the unlock type and the unlock password number, if it is not the unlock record, it can be empty|
-|tags|int|record tag，0 means other, 1 means hijack alarm|
-
-**Tips**
-
-You can query the unlocking records, get the `unlockRelation`, and assign it to the created user.
-
-For example, if you create a password on the door lock, and then use the password to unlock, a lock unlocking record is generated. The app can query this unlocking record and assign the password to the user you want to assign.
-
-**Example**
-
-Obtain the door opening record: you can enter the door opening related function points to obtain the door opening record.
-
-```java
-ArrayList<String> dpCodes = new ArrayList<>();
-dpCodes.add("unlock_fingerprint");
-dpCodes.add("unlock_password");
-dpCodes.add("unlock_temporary");
-dpCodes.add("unlock_dynamic");
-dpCodes.add("unlock_card");
-dpCodes.add("unlock_face");
-dpCodes.add("unlock_key");
-dpCodes.add("unlock_app");
-dpCodes.add("unlock_eye");
-dpCodes.add("unlock_hand");
-dpCodes.add("unlock_finger_vein");
-tuyaLockDevice.getRecords(dpCodes, 0, 10, new ITuyaResultCallback<Record>() {
-    @Override
-    public void onError(String code, String message) {
-        Log.e(TAG, "get unlock records failed: code = " + code + "  message = " + message);
-    }
-
-    @Override
-    public void onSuccess(Record recordBean) {
-        Log.i(TAG, "get unlock records success: recordBean = " + recordBean);
-    }
-});
-```
-
-
-Obtain door lock alarm records: 
-
-```java
-ArrayList<String> dpCodes = new ArrayList<>();
-dpCodes.add("alarm_lock");
-dpCodes.add("hijack");
-dpCodes.add("doorbell");
-tuyaLockDevice.getRecords(dpCodes, 0, 10, new ITuyaResultCallback<Record>() {
-    @Override
-    public void onError(String code, String message) {
-        Log.e(TAG, "get lock records failed: code = " + code + "  message = " + message);
-    }
-
-    @Override
-    public void onSuccess(Record recordBean) {
-        Log.i(TAG, "get lock records success: recordBean = " + recordBean);
-    }
-});
-```
-
-
-#### Get Door Lock Hijacking Record
-
-Use the SDK to obtain the door lock hijacking record. You can query it based on the unlocking function definition point.
-
-**Description**
-
-```java
-public void getHijackRecords(int offset, int limit, final ITuyaResultCallback<RecordBean> callback)
-```
-
-**Example**
-
-```java
-tuyaLockDevice.getHijackRecords(0, 10, new ITuyaResultCallback<Record>() {
-    @Override
-    public void onError(String code, String message) {
-        Log.e(TAG, "get lock hijack records failed: code = " + code + "  message = " + message);
-    }
-
-    @Override
-    public void onSuccess(Record hijackingRecordBean) {
-        Log.i(TAG, "get lock hijack records success: hijackingRecordBean = " + hijackingRecordBean);
-    }
-});
-```
-
-### Open the Door Remotely
+## Open the Door Remotely
 
 After triggering a remote door open request on the door lock, you can use the SDK to remotely open the door
 
+```sequence
+Title: Remote Open
+
+participant User
+participant Lock
+participant app
+
+User->Lock: operate lock (4+#)
+Lock->app: send open request
+note over app: receive open request
+app-->Lock: send open result
+note over Lock: handle result
+
+```
+
 To open a door remotely, you need to register for remote door opening monitoring. After receiving the remote door opening request for the door lock, you can call the remote door opening interface.
 
-#### Register Remote Unlock Listener
+### Register Remote Unlock Listener
 
 **Description**
 
@@ -497,7 +432,7 @@ The method parameters are as follows：
 |devId |String|device id|
 |second |int|How many seconds do you need to process|
 
-#### Request Remote Unlock
+### Request Remote Unlock
 
 **Description**
 
@@ -511,7 +446,7 @@ public void replyRemoteUnlock(boolean allow, final ITuyaResultCallback<Boolean> 
 |---|---|---|
 | allow |boolean|Whether to allow unlocking|
 
-#### Remote Unlock Example
+**Example**
 
 ```java
 @Override
@@ -581,3 +516,179 @@ private void replyRemoteUnlockRequest(boolean allow) {
     });
 }
 ```
+
+
+
+## Lock Records
+
+Use SDK to obtain door lock records, including unlock records, doorbell records, alarm records, etc.
+
+### Get Lock Records
+
+**Description**
+
+```java
+public void getRecords(ArrayList<String> dpCodes, int offset, int limit, final ITuyaResultCallback<Record> callback)
+```
+
+**Parameters**
+
+|Parameter|Description|
+|---|---|
+|dpCodes|Need to query the unlocking method dp codes. For details, refer to [Wi-Fi Door Lock Function Points](#wi-fi-door-lock-function-points)|
+|offset|page offset|
+|limit|item count in one page|
+
+**Parameters in callback**
+
+`Record`  Description
+
+|Field|Type|Description|
+|---|---|---|
+|totalCount|int|total count of records|
+|hasNext|boolean|has next page|
+|datas|List<DataBean>|the list of records|
+
+`DataBean` Description
+
+|Field|Type|Description|
+|---|---|---|
+|userId|String|user id|
+|avatarUrl|String|user avatar url|
+|userName| String |user name|
+|createTime|long|create timestamp, unit ms|
+|devId| String |device id|
+|dpCodesMap|HashMap<String, Object>|dp data of this record|
+|unlockRelation|UnlockRelation| The relationship between the unlock type and the unlock password number, if it is not the unlock record, it can be empty|
+|tags|int|record tag，0 means other, 1 means hijack alarm|
+
+**Tips**
+
+You can query the unlocking records, get the `unlockRelation`, and assign it to the created user.
+
+For example, if you create a password on the door lock, and then use the password to unlock, a lock unlocking record is generated. The app can query this unlocking record and assign the password to the user you want to assign.
+
+**Example**
+
+You can enter the function points to obtain the door record.
+
+```java
+ArrayList<String> dpCodes = new ArrayList<>();
+dpCodes.add("alarm_lock");
+dpCodes.add("hijack");
+dpCodes.add("doorbell");
+tuyaLockDevice.getRecords(dpCodes, 0, 10, new ITuyaResultCallback<Record>() {
+    @Override
+    public void onError(String code, String message) {
+        Log.e(TAG, "get unlock records failed: code = " + code + "  message = " + message);
+    }
+
+    @Override
+    public void onSuccess(Record recordBean) {
+        Log.i(TAG, "get unlock records success: recordBean = " + recordBean);
+    }
+});
+```
+
+### Get Door Lock Unlock Records
+
+Use SDK to obtain door lock records, including unlock records, doorbell records, alarm records, etc.
+
+**Description**
+
+```java
+/**
+ * get unlock records
+ * @param unlockTypes unlock type list 
+ * @param offset page number
+ * @param limit item count
+ * @param callback callback
+ */
+void getUnlockRecords(int offset, int limit, final ITuyaResultCallback<Record> callback);
+```
+**Parameters**
+
+|Parameter|Description|
+|---|---|
+|offset|page offset|
+|limit|item count in one page|
+
+**Example**
+
+```java
+tuyaLockDevice.getUnlockRecords(0, 10, new ITuyaResultCallback<Record>() {
+    @Override
+    public void onError(String code, String message) {
+        Log.e(TAG, "get unlock records failed: code = " + code + "  message = " + message);
+    }
+
+    @Override
+    public void onSuccess(Record recordBean) {
+        Log.i(TAG, "get unlock records success: recordBean = " + recordBean);
+    }
+});
+```
+
+### Get Door Lock Hijacking Record
+
+Use the SDK to obtain the door lock hijacking record. You can query it based on the unlocking function definition point.
+
+**Description**
+
+```java
+public void getHijackRecords(int offset, int limit, final ITuyaResultCallback<Record> callback)
+```
+
+**Example**
+
+```java
+tuyaLockDevice.getHijackRecords(0, 10, new ITuyaResultCallback<Record>() {
+    @Override
+    public void onError(String code, String message) {
+        Log.e(TAG, "get lock hijack records failed: code = " + code + "  message = " + message);
+    }
+
+    @Override
+    public void onSuccess(Record hijackingRecord) {
+        Log.i(TAG, "get lock hijack records success: hijackingRecord = " + hijackingRecord);
+    }
+});
+```
+
+## Wi-Fi Door Lock Function Points
+| dp name                              | dp code                        |
+| ------------------------------------ | ------------------------------ |
+| unlock by fingerprint                | unlock\_fingerprint            |
+| unlock by password                   | unlock\_password               |
+| unlock by temporary password         | unlock\_temporary              |
+| unlock by dynamic password           | unlock\_dynamic                |
+| unlock by card                       | unlock\_card                   |
+| unlock by face                       | unlock\_face                   |
+| unlock by key                        | unlock\_key                    |
+| alarm record                         | alarm\_lock                    |
+| apply remote unlock                  | unlock\_request                |
+| reply remote unlock                  | reply\_unlock\_request         |
+| battery status                       | battery\_state                 |
+| residual electricity                 | residual\_electricity          |
+| lock from inside                     | reverse\_lock                  |
+| child lock status                    | child\_lock                    |
+| unlock by app                        | unlock\_app                    |
+| hijack alarm record                  | hijack                         |
+| open the door from inside            | open\_inside                   |
+| door opening and closing status      | closed\_opened                 |
+| doorbell alarm record                | doorbell                       |
+| SMS notifacation                     | message                        |
+| lock from outside                    | anti\_lock\_outside            |
+| unlock by eye                        | unlock\_eye                    |
+| unlock by hand                       | unlock\_hand                   |
+| unlock by finger vein                | unlock\_finger\_vein           |
+| update all finger record             | update\_all\_finger            |
+| update all password record           | update\_all\_password          |
+| update all card record               | update\_all\_card              |
+| update all face record               | update\_all\_face              |
+| update all eye record                | update\_all\_eye               |
+| update all hand record               | update\_all\_hand              |
+| update all finger vein record        | update\_all\_fin\_vein         |
+| offline password unlock report       | unlock\_offline\_pd            |
+| offline password clear report        | unlock\_offline\_clear         |
+| single offline password clear report | unlock\_offline\_clear\_single |

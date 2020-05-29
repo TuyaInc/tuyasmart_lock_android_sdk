@@ -1,8 +1,23 @@
-# Tuya BLE Lock
+# Tuya BLE Lock Instructions
 
-Before accessing the Bluetooth door lock, please configure the device.
+## Term Explanation
 
-The following describes the functional interface of the Bluetooth door lock
+| Term                   | Explanation                                                  |
+| ---------------------- | ------------------------------------------------------------ |
+|dpCode|The identifier of the device function point. Each function point in the device has a name and number. Please refer to [BLE Door Lock Function Points](#ble-door-lock-function-points)|
+| hijack           | Door lock hijacking refers to setting a specific password (fingerprint, password, etc.) as the hijacking password. <br/> When the user enters this password to open the door, the door lock considers the user to open the door involuntarily, and sends the alarm information to the family's mobile phone or property management system. |
+| door lock member | Door lock members are divided into family members and non-family members. <br/> Family members are members who are added to the user's family. The door lock can be used to manage family members and set the unlock mode. <br/> Non-family members are members created in door locks and can be managed through door lock related interfaces. |
+| lockUserId and userId | `lockUserId` is the firmware member id assigned to the device by the cloud when creating the door lock member. <br />`userId` is the database record id assigned by the cloud when creating the door lock member, means the user's unique id |
+
+## Description
+
+| Class Name                    | **Description**                                              |
+| ----------------------------- | ------------------------------------------------------------ |
+| `TuyaOptimusSdk`   | SDK init class, used to create `ITuyaLockManager` |
+| `ITuyaLockManager` | Lock manager class, used to create `ITuyaBleLock` |
+| `ITuyaBleLock` | BLE door lock class, all BLE door lock APIs are in it |
+
+Create `ITuyaBleLock` by device id:
 
 ```java
 // init sdk
@@ -13,158 +28,18 @@ ITuyaLockManager tuyaLockManager = TuyaOptimusSdk.getManager(ITuyaLockManager.cl
 ITuyaBleLock tuyaLockDevice = tuyaLockManager.getBleLock(your_device_id);
 ```
 
-**Permissions**
+## Member Management
 
-In order to scan and connect Bluetooth devices, you need to add the following permissions to AndroidManifest.xml.
+The door lock can be divided into family members and non-family members. Family members are concepts in the whole house intelligence, you can refer to the [Family Member Management](https://tuyainc.github.io/tuyasmart_home_android_sdk_doc/en/resource/HomeMember.html)  for details.
 
-```xml
-<!-- Required. Allows applications to connect to paired bluetooth devices.  -->
-<uses-permission android:name="android.permission.BLUETOOTH" />
-<!-- Required. Allows applications to discover and pair bluetooth devices.  -->
-<uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
-<!-- Required.  Allows an app to scan bluetooth device.  -->
-<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-<!-- Required.  Allows an app to scan bluetooth device.  -->
-<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-<!--  Allows an app to use bluetooth low energy feature  -->
-<uses-feature
-	android:name="android.hardware.bluetooth_le"
-	android:required="false" />
-```
-
-You can refer to the documentation for dynamic permission acquisition，[Request App Permissions](https://developer.android.com/training/permissions/requesting?hl=en#make-the-request)。
-
-## Lock or Unlock Door with Bluetooth
-
-After the Bluetooth connection is established between the mobile phone and the device, the door lock can be opened via Bluetooth.
-
-The following figure illustrates the complete interaction process of unlocking:
-
-```mermaid
-sequenceDiagram
-SDK->>Lock: Connect
-Note left of Lock: Connect via Bluetooth
-Lock-->>SDK: Connect success
-SDK->>Lock: Send unlock command
-Lock-->>SDK: Unlock success
-SDK->>Server: Notify to server
-loop save record
-	Server->>Server: 
-end
-Server-->>SDK: Success
-```
-
-### Determine the Lock Is Connected
-
+### Get Lock Members
 **Description**
-
-Determine whether the Bluetooth door lock is connected to the mobile phone.
-
-The operations related to controlling the door lock basically need to call this interface to judge, and the door lock must be online to operate.
 
 ```java
 /**
- *  @return if lock online, return true
+ * get lock users
  */
-public boolean isOnline() 
-```
-
-**Example**
-
-```java
-boolean online = tuyaLockDevice.isOnline();
-```
-
-### Connect Bluetooth Door Lock
-
-**Description**
-
-If the door lock is not connected, call this interface to connect to the door lock
-
-```java
-/**
- * connect to lock
- *
- * @param connectListener callback BLE lock connect status
- */
-public void connect(ConnectListener connectListener)
-```
-
-**Parameters**
-
-`ConnectListener` is the callback of device connection status, `onStatusChanged` will return online status.
-
-**Example**
-
-```java
-tuyaLockDevice.connect(new ConnectListener() {
-    @Override
-    public void onStatusChanged(boolean online) {
-        Log.i(TAG, "onStatusChanged  online: " + online);
-    }
-});
-```
-
-### Unlock via Bluetooth
-
-**Description**
-
-After the door lock is connected with the app, you can call this interface to unlock it.
-
-```java
-/**
- * unlock the door
- */
-public void unlock(String lockUserId)
-```
-
-**Parameters**
-
-|Parameter|Description|
-|---|---|
-| lockUserId |The user id in the door lock device |
-
-All users will have a corresponding id in the door lock, the id starts from 1, and the number will increase by one for each new user added.
-
-**Example**
-
-```java
-// "1" is the id of the current user in the door lock device
-tuyaLockDevice.unlock("1");
-```
-
-### Lock via Bluetooth
-**Description**
-
-After the door lock is connected with the app, you can call this interface to lock it.
-
-```java
-/**
- * lock the door
- */
-public void lock()
-```
-
-**Example**
-
-```java
-tuyaLockDevice.lock();
-```
-
-## User Management
-
-The door lock can be divided into family members and non-family members. Family members are concepts in the whole house intelligence, you can refer to the family member management for details
-
-### Get Home Users
-**Description**
-
-Home users are users who have registered accounts and can log in to the app.
-
-```java
-/**
- * get home users
- */
-public void getHomeUsers(final ITuyaResultCallback<List<BLELockUser>> callback)
+public void getLockUsers(final ITuyaResultCallback<List<BLELockUser>> callback)
 ```
 
 **Parameters**
@@ -183,35 +58,6 @@ public void getHomeUsers(final ITuyaResultCallback<List<BLELockUser>> callback)
 |effectiveTimestamp|long|User effective timestamp, unit ms|
 |invalidTimestamp| long |User failure timestamp, unit ms|
 
-
-**Example**
-
-```java
-tuyaLockDevice.getHomeUsers(new ITuyaResultCallback<List<BLELockUser>>() {
-    @Override
-    public void onError(String code, String message) {
-        Log.e(TAG, "get lock users failed: code = " + code + "  message = " + message);
-    }
-
-    @Override
-    public void onSuccess(List<BLELockUser> user) {
-        Log.i(TAG, "get lock users success: lockUserBean = " + user);
-    }
-});
-```
-
-### Get Lock Users
-**Description**
-
-The door lock user is a user created through the newly added door lock user interface and cannot be used to log in. It can only be used to associate unlock records.
-
-```java
-/**
- * get lock users
- */
-public void getLockUsers(final ITuyaResultCallback<List<BLELockUser>> callback)
-```
-
 **Example**
 
 ```java
@@ -228,20 +74,25 @@ tuyaLockDevice.getLockUsers(new ITuyaResultCallback<List<BLELockUser>>() {
 });
 ```
 
-### Add Door Lock User
+### Create Lock Member
 
-```mermaid
-sequenceDiagram
-SDK->>Server: Request add lock user
+SDK support add member for lock device
 
-Server-->>SDK: Success
+```sequence
+Title: create lock member
+
+participant app
+participant server
+
+note over app: write member info
+app->server: send create member request
+server-->app: response result
+note over app: show result
 ```
 
+> Note:  For non-family members created here,  family members needs to refer to the document  [Family Member Management](https://tuyainc.github.io/tuyasmart_home_android_sdk_doc/en/resource/HomeMember.html).
+
 **Description**
-
-Add door lock users.
-
-Note that the non-family members created here are only associated with unlocking records. The management of family users needs to refer to the document [Family Management](https://tuyainc.github.io/tuyasmart_home_android_sdk_doc/en/resource/HomeManager.html).
 
 ```java
 /**
@@ -286,13 +137,27 @@ tuyaLockDevice.addLockUser("your_user_name", true, true, 0, 0, null, new ITuyaRe
 });
 ```
 
-### Update Door Lock Users
+### Update Lock Member
+
+SDK provides the function of modifying the members of the lock. The members of the lock will interact with the hardware and require the device to maintain a Bluetooth connection.
+
+```sequence
+Title: Update Lock Member
+
+participant server
+participant app
+participant lock
+
+note over app: write new user info
+app->lock: create bluetooth connection
+app->lock: send device update member command data
+lock-->app: receive device update result
+app->server: send request, update member
+server-->app: return result
+note over app: show result
+```
 
 **Description**
-
-Update door lock users.
-
-Note that the non-family members created here are only associated with unlocking records. The management of family users needs to refer to the document [Family Management](https://tuyainc.github.io/tuyasmart_home_android_sdk_doc/en/resource/HomeManager.html).
 
 ```java
 /**
@@ -339,9 +204,25 @@ tuyaLockDevice.updateLockUser("your_user_id", true, "your_user_name", true, 0, 0
 });
 ```
 
-### Delete Lock User
+### Delete Lock Member
 
-Note that only the door lock user can be deleted here. The management of family users needs to refer to the document [Family Management](https://tuyainc.github.io/tuyasmart_home_android_sdk_doc/en/resource/HomeManager.html).
+SDK provides the feature of deleting the member of the lock. The member of the lock will interact with the hardware and delete all unlocking methods and passwords of the user. The operation requires the device to maintain a bluetooth connection.
+
+```sequence
+Title: Delete Lock Member
+
+participant server
+participant app
+participant lock
+
+note over app: delete member
+app->lock: create bluetooth connection
+app->lock: send delete user command data
+lock-->app: response command result
+app->server: send delete user reques
+server-->app: response result
+note over app: show result
+```
 
 **Description**
 
@@ -355,38 +236,241 @@ public void deleteLockUser(BLELockUser user, final ITuyaResultCallback<Boolean> 
 ```
 
 
-### Get Users by User Id
+## Device Bluetooth Connection Status
+
+After the Bluetooth connection is established between the mobile phone and the device, the door lock can be opened via Bluetooth.
+
+### Determine the Lock Is Connected
+
 **Description**
+
+Determine whether the Bluetooth door lock is connected to the mobile phone.
+
+The operations related to controlling the door lock basically need to call this interface to judge, and the door lock must be online to operate.
 
 ```java
 /**
- * get user info by userId
- * @param userId userId
- * @param callback callback
+ *  @return if lock online, return true
  */
-public void getUser(String userId, final ITuyaResultCallback<BLELockUser> callback)
+public boolean isBLEConnected() 
+```
+
+**Example**
+
+```java
+boolean online = tuyaLockDevice.isBLEConnected();
+```
+
+### Connect Bluetooth Door Lock
+
+**Description**
+
+If the door lock is not connected, call this interface to connect to the door lock
+
+```java
+/**
+ * connect to lock
+ *
+ * @param connectListener callback BLE lock connect status
+ */
+public void connect(ConnectListener connectListener)
+```
+
+**Parameters**
+
+`ConnectListener` is the callback of device connection status, `onStatusChanged` will return online status.
+
+**Example**
+
+```java
+tuyaLockDevice.connect(new ConnectListener() {
+    @Override
+    public void onStatusChanged(boolean online) {
+        Log.i(TAG, "onStatusChanged  online: " + online);
+    }
+});
+```
+## Dynamic Password
+
+Use the SDK to get a dynamic password and enter it on the door lock to unlock. The dynamic password is valid for 5 minutes.
+
+```sequence
+title: Unlock with dynamic password
+participant lock
+participant user
+participant app
+participant server
+
+app -> server: Request for dynamic password
+server --> app: Returns dynamic password results
+app --> user: Send password
+note over user: Get dynamic password
+user -> lock: Input dynamic password
+note over lock: Execute
+
+```
+
+### Get Dynamic Password
+**Description**
+
+```java
+public void getDynamicPassword(final ITuyaResultCallback<String> callback)
+```
+
+**Example**
+
+```java
+tuyaLockDevice.getDynamicPassword(new ITuyaResultCallback<String>() {
+    @Override
+    public void onError(String code, String message) {
+        Log.e(TAG, "get lock dynamic password failed: code = " + code + "  message = " + message);
+    }
+
+    @Override
+    public void onSuccess(String dynamicPassword) {
+        Log.i(TAG, "get lock dynamic password success: dynamicPassword = " + dynamicPassword);
+    }
+});
+```
+
+## Bluetooth Unlock & Lock
+
+### Unlock via Bluetooth
+
+```sequence
+Title: Bluetooth Unlock
+
+participant user
+participant app
+participant lock
+
+note over app: bluetooth open, lock device connected
+user->app: unlock
+app->lock: use ble send unlock command data
+note over lock: receive command, execute
+lock-->app: send unlock result
+note over app: show result
+```
+
+**Description**
+
+After the door lock is connected with the app, you can call this interface to unlock it.
+
+```java
+/**
+ * unlock the door
+ */
+public void unlock(String lockUserId)
 ```
 
 **Parameters**
 
 |Parameter|Description|
 |---|---|
-| userId |user id|
+| lockUserId |The user id in the door lock device |
 
+All users will have a corresponding id in the door lock, the id starts from 1, and the number will increase by one for each new user added.
 
-### Get User of the Current User
+**Example**
+
+```java
+// "1" is the id of the current user in the door lock device
+tuyaLockDevice.unlock("1");
+```
+
+### Lock via Bluetooth
+
+```sequence
+Title: Bluetooth Lock
+
+participant user
+participant app
+participant lock
+
+note over app: bluetooth open, lock device connected
+user->app: lock
+app->lock: use ble send lock command data
+note over lock: receive command, execute
+lock-->app: send lock result
+note over app: show result
+```
+
 **Description**
 
 ```java
 /**
- * get current user info
- * @param userId userId
- * @param callback callback
+ * lock the door
  */
-public void getCurrentUser(final ITuyaResultCallback<BLELockUser> callback)
+public void lock()
 ```
 
-## Get Door Lock Operation Records
+**Example**
+
+```java
+tuyaLockDevice.lock();
+```
+
+## Lock Records
+
+### Get Alarm Records
+
+**Description**
+
+```java
+/**
+ * get alarm records
+ * @param offset page number
+ * @param limit item count
+ * @param callback callback
+ */
+void getAlarmRecords(int offset, int limit, final ITuyaResultCallback<Record> callback);
+```
+
+
+**Parameters**
+
+|Parameter|Description|
+|---|---|
+|offset|page offset|
+|limit|item count in one page|
+
+**Parameters in callback**
+
+`Record`  Description
+
+| Field      | Type           | Description            |
+| ---------- | -------------- | ---------------------- |
+| totalCount | int            | total count of records |
+| hasNext    | boolean        | has next page          |
+| datas      | List<DataBean> | the list of records    |
+
+`DataBean` Description
+
+| Field          | Type                    | Description                                                  |
+| -------------- | ----------------------- | ------------------------------------------------------------ |
+| userId         | String                  | user id                                                      |
+| unlockType     | String                  | unlock type                                                  |
+| userName       | String                  | user name                                                    |
+| createTime     | long                    | create timestamp, unit ms                                    |
+| devId          | String                  | device id                                                    |
+| unlockRelation | UnlockRelation          | The relationship between the unlock type and the unlock password number, if it is not the unlock record, it can be empty |
+| tags           | int                     | record tag，0 means other, 1 means hijack alarm              |
+
+**Example**
+
+```java
+tuyaLockDevice. getAlarmRecords(0, 10, new ITuyaResultCallback<Record>() {
+    @Override
+    public void onError(String code, String message) {
+        Log.e(TAG, "get lock records failed: code = " + code + "  message = " + message);
+    }
+
+    @Override
+    public void onSuccess(Record recordBean) {
+        Log.i(TAG, "get lock records success: recordBean = " + recordBean);
+    }
+});
+```
 
 ### Get Unlocked Records
 
@@ -400,14 +484,13 @@ public void getCurrentUser(final ITuyaResultCallback<BLELockUser> callback)
  * @param limit item count
  * @param callback callback
  */
-void getUnlockRecords(List<String> unlockTypes, int offset, int limit, final ITuyaResultCallback<Record> callback);
+void getUnlockRecords(int offset, int limit, final ITuyaResultCallback<Record> callback);
 ```
 
 **Parameters**
 
 |Parameter|Description|
 |---|---|
-| unlockTypes |List of unlocking types|
 |offset|page offset|
 |limit|item count in one page|
 
@@ -415,9 +498,7 @@ void getUnlockRecords(List<String> unlockTypes, int offset, int limit, final ITu
 **Example**
 
 ```java
-ArrayList<String> unlockTypes = new ArrayList<>();
-unlockTypes(TuyaUnlockType.BLE);
-tuyaLockDevice.getUnlockRecords(unlockTypes, 0, 10, new ITuyaResultCallback<Record>() {
+tuyaLockDevice.getUnlockRecords(0, 10, new ITuyaResultCallback<Record>() {
     @Override
     public void onError(String code, String message) {
         Log.e(TAG, "get unlock records failed: code = " + code + "  message = " + message);
@@ -429,50 +510,7 @@ tuyaLockDevice.getUnlockRecords(unlockTypes, 0, 10, new ITuyaResultCallback<Reco
     }
 });
 ```
-### Get Alarm Records
 
-**Description**
-
-According to the dp point to get the record you want to get.
-
-```java
-/**
- * get records by dpCodes
- * @param dpCodes dp codes of record
- * @param offset page number
- * @param limit item count
- * @param callback callback
- */
-void getRecords(List<String> dpCodes, int offset, int limit, final ITuyaResultCallback<Record> callback);
-```
-
-
-**Parameters**
-
-|Parameter|Description|
-|---|---|
-| unlockTypes |List of unlocking types|
-|offset|page offset|
-|limit|item count in one page|
-
-**Example**
-
-```java
-ArrayList<String> dpCodes = new ArrayList<>();
-dpCodes.add("alarm_lock");
-dpCodes.add("doorbell");
-tuyaLockDevice.getRecords(dpCodes, 0, 10, new ITuyaResultCallback<Record>() {
-    @Override
-    public void onError(String code, String message) {
-        Log.e(TAG, "get lock records failed: code = " + code + "  message = " + message);
-    }
-
-    @Override
-    public void onSuccess(Record recordBean) {
-        Log.i(TAG, "get lock records success: recordBean = " + recordBean);
-    }
-});
-```
 
 ## Unlock Mode Management
 
@@ -797,7 +835,7 @@ The fingerprint unlock mode generally requires 4 to 5 fingerprints to be entered
  */
 void cancelFingerprintUnlockMode(final BLELockUser user);
 ```
-### Update the Unlock mode of Password Type
+### Update the Unlock Mode of Password Type
 
 **Description**
 
@@ -848,3 +886,74 @@ tuyaLockDevice.getUnlockModeList(TuyaUnlockType.PASSWORD, new ITuyaResultCallbac
     }
 });
 ```
+
+## BLE Door Lock Function Points
+
+| dp name                  | dp code                     |
+| ------------------------ | --------------------------- |
+| create unlock method             | unlock_method_create        |
+| delete unlock method      | unlock_method_delete        |
+| modify unlock method             | unlock_method_modify        |
+| disable unlock method           | unlock_method_freeze        |
+| enable unlock method            | unlock_method_enable        |
+| blue tooth unlock feedback             | bluetooth_unlock_fb         |
+| unlock by bluetooth                | bluetooth_unlock            |
+| query bluetooth unlock record             | unlock_ble                  |
+| query fingerprint unlock record         | unlock_fingerprint            |
+| query password unlock record                   | unlock_password               |
+| query temporary unlock record      | unlock_temporary              |
+| query dynamic unlock record      | unlock_dynamic                |
+| query card unlock record      | unlock_card                   |
+| query face unlock record      | unlock_face                   |
+| query key unlock record      | unlock_key                    |
+| query eye unlock record      | unlock_eye                    |
+| query hand unlock record      | unlock_hand                   |
+| query finger vein unlock record               | unlock_finger_vein           |
+| alarm record                         | alarm_lock                    |
+| apply remote unlock                  | unlock_request                |
+| reply remote unlock                  | reply_unlock_request         |
+| battery status                       | battery_state                 |
+| residual electricity                 | residual_electricity          |
+| lock from inside                     | reverse_lock                  |
+| child lock status                    | child_lock                    |
+| automatic lock switch          | automatic_lock              |
+| Synchronized member opening method         | synch_member                |
+| Auto lock delay time setting         | auto_lock_time              |
+| auto lock timer             | auto_lock_timer             |
+| finger input times             | finger_input_times          |
+| doorbell song selete             | doorbell_song               |
+| doorbell volume                 | doorbell_volume             |
+| language             | language                    |
+| lock welcome words         | welcome_words               |
+| door opened status                 | door_opened                 |
+| key volume                  | key_tone                    |
+| beep volume         | beep_volume                 |
+| rtc lock              | rtc_lock                    |
+| auto lock countdown time       | auto_lock_countdown         |
+| manual lock                 | manual_lock                 |
+| lock motor status                 | lock_motor_state            |
+| lock motor direction     | lock_motor_direction        |
+| disable unlock user                 | unlock_user_freeze          |
+| enable unlock user                 | unlock_user_enable          |
+| create temporary password       | temporary_password_creat    |
+| delete temporary password       | temporary_password_delete   |
+| modify temporary password       | temporary_password_modify   |
+| sync unlock method | synch_method                |
+| motor torque                 | motor_torque                |
+| unlock method combination     | unlock_double               |
+| arming mode switch          | arming_mode                 |
+| set remote no password unlock       | remote_no_pd_setkey         |
+| remote no password unlock    | remote_no_dp_key            |
+| remote phone unlock report         | unlock_phone_remote         |
+| remote vioce unlock report          | unlock_voice_remote         |
+| password offline time       | password_offline_time       |
+| door open close event             | open_close                  |
+| hijack alarm record                  | hijack                         |
+| open the door from inside            | open_inside                   |
+| door opening and closing status      | closed_opened                 |
+| doorbell alarm record                | doorbell                       |
+| SMS notifacation                     | message                        |
+| lock from outside                    | anti_lock_outside            |
+| offline password unlock report       | unlock_offline_pd            |
+| offline password clear report        | unlock_offline_clear         |
+| single offline password clear report | unlock_offline_clear_single |

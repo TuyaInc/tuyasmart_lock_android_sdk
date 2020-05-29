@@ -8,7 +8,7 @@
   * [Lock Records](resource/WiFiLockDoc.md#lock-records) 
 * [BLE Door Lock Document](resource/BLELockDoc.md#)
   * [Member Management](resource/BLELockDoc.md#member-management)
-  * [Device Bluetooth Connection Status](resource/BLELockDoc.md#device-bluetooth-onnection-status)
+  * [Device Bluetooth Connection Status](resource/BLELockDoc.md#device-bluetooth-connection-status)
   * [Dynamic Password](resource/BLELockDoc.md#dynamic-password)
   * [Bluetooth Unlock & Lock](resource/BLELockDoc.md#bluetooth-unlock--lock)
   * [Lock Records](resource/BLELockDoc.md#lock-records)

@@ -2,6 +2,6 @@
 
 ---
 
-* [English](https://tuyainc.github.io/tuyasmart_lock_android_sdk/en/)
+* [English](https://tuyainc.github.io/tuyasmart_home_android_sdk_doc/en/resource/Lock.html)
 
-* [简体中文](https://tuyainc.github.io/tuyasmart_lock_android_sdk/zh-hans/)
+* [简体中文](https://tuyainc.github.io/tuyasmart_home_android_sdk_doc/zh-hans/resource/Lock.html)
